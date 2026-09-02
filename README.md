@@ -239,14 +239,18 @@ Buat file `.env.local` di root proyek:
 
 ```bash
 ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxx
+ANTHROPIC_BASE_URL=https://api.anthropic.com # optional
+ANTHROPIC_MODEL=claude-3-5-haiku-20241022     # optional, default haiku
 ```
+
+Salin dari `.env.example` bila perlu. Key hanya dibaca di `src/app/api/insight/route.ts` (server-only, `runtime: nodejs`) — tidak pernah masuk bundle browser. `ANTHROPIC_BASE_URL`/`ANTHROPIC_MODEL` opsional untuk endpoint Anthropic-compatible lain.
 
 > ⚠️ `.env.local` sudah masuk `.gitignore`. Jangan pernah commit API key ke repositori.
 
 **4. Verifikasi instalasi**
 
 ```bash
-npm test     # 45 test harus lolos
+npm test     # 55 test harus lolos (32 engine + 13 rekomendasi + 10 ai-prompt)
 npm run build # build produksi harus sukses
 ```
 
@@ -269,7 +273,7 @@ Buka [http://localhost:3000](http://localhost:3000).
 | `npm run dev` | Development server dengan hot reload |
 | `npm run build` | Build produksi |
 | `npm start` | Jalankan hasil build produksi |
-| `npm test` | Jalankan seluruh unit test (45 test) |
+| `npm test` | Jalankan seluruh unit test (55 test) |
 | `npm run test:watch` | Test dalam mode watch |
 | `npm run lint` | Periksa kualitas kode dengan ESLint |
 | `npm run demo:numbers` | Generate tabel angka demo dari engine |
@@ -351,7 +355,7 @@ Perhatikan skenario ketiga: totalnya **lebih mahal** karena enam fasilitas akses
 npm test
 ```
 
-45 unit test menutupi keempat dimensi engine, normalisasi skor, validasi input, peringkat rekomendasi, dan satu test regresi khusus untuk formula inklusi.
+55 unit test menutupi keempat dimensi engine, normalisasi skor, validasi input, peringkat rekomendasi, prompt AI Insight, dan satu test regresi khusus untuk formula inklusi.
 
 Contoh yang diuji:
 

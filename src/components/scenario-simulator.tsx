@@ -23,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AiInsight } from "@/components/ai-insight";
 import { EventForm } from "@/components/event-form";
 import { ImpactDashboard } from "@/components/impact-dashboard";
 import { RecommendationList } from "@/components/recommendation-list";
@@ -166,8 +167,16 @@ export function ScenarioSimulator() {
           </Card>
         </div>
 
-        <div className="grid gap-4">
+        <div className="grid gap-6">
           <ImpactDashboard result={scenarioResult} baseline={baselineResult} />
+
+          <AiInsight
+            key={JSON.stringify(scenario) + JSON.stringify(baseline)}
+            scenario={scenario}
+            baseline={baseline}
+            scenarioResult={scenarioResult}
+            baselineResult={baselineResult}
+          />
 
           <Card>
             <CardHeader>
