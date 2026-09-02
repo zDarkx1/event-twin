@@ -1,7 +1,7 @@
 # PRD — EventTwin
 
-**Versi:** 1.0
-**Tanggal:** 1 September 2026
+**Versi:** 1.1
+**Tanggal:** 1 September 2026 (diperbarui 2 September 2026 — engine selesai, koefisien terkalibrasi)
 **Deadline penyisihan:** 6 September 2026, 23.59 WIB
 **Lomba:** ITechno Cup 2026 — Web Development (SMA/MA/SMK)
 
@@ -91,46 +91,51 @@ Siswa/guru penanggung jawab festival, pentas seni, atau lomba internal. Punya an
 | `accessibility` | set flag | ramp, toilet difabel, kursi prioritas, penerjemah isyarat, jalur pemandu, materi huruf besar | kosong |
 | `estimatedDisabledGuests` | integer | 0–participants | 15 |
 
-**Validasi.** Semua input numerik di-clamp ke rentang di atas sebelum masuk engine. Ini batas kepercayaan sistem — nilai di luar rentang menghasilkan angka yang tidak masuk akal dan merusak kredibilitas saat demo.
+**Validasi.** Semua input numerik di-clamp ke rentang di atas sebelum masuk engine — diimplementasikan sebagai `clampParams()` di `src/lib/engine.ts`, termasuk penanganan `NaN` dan pembatasan `estimatedDisabledGuests` agar tidak melebihi `participants`. Ini batas kepercayaan sistem: nilai di luar rentang menghasilkan angka yang tidak masuk akal dan merusak kredibilitas saat demo.
 
 ### 4.2 Output — empat dimensi (F2)
 
 **Dimensi 1 — Sampah (kg).**
 ```
-sampahMakanan   = participants × mealsPerPerson × faktorKemasanMakanan
+sampahKemasan   = participants × mealsPerPerson × faktorKemasanMakanan
 sampahMinuman   = participants × drinksPerPerson × faktorWadahMinum
 sampahUmum      = participants × durationHours × faktorSampahUmumPerOrangJam
 sampahOrganik   = participants × mealsPerPerson × faktorSisaMakanan
-total           = jumlah semua, dikurangi efek pemilahan (wasteBins)
+timbulan        = jumlah semua                          → waste.generatedKg
+residuKeTPA     = timbulan × faktorResidu(wasteBins)    → waste.landfillKg
 ```
-Komposisi dipecah: plastik, organik, kertas, lain-lain.
+Timbulan dan residu ke TPA adalah **dua angka berbeda**. Pemilahan hanya mengurangi residu, tidak mengurangi timbulan — di UI, angka yang dipengaruhi `wasteBins` harus dilabeli "residu ke TPA". Komposisi dipecah: plastik, organik, kertas, lain-lain.
 
-**Dimensi 2 — Energi (kWh) & emisi (kg CO₂e).**
+**Dimensi 2 — Energi (kWh) & emisi (kg CO₂).**
 ```
-kWhPencahayaan = dayaLampuPerPeserta × participants × durationHours
+kWhPencahayaan = wattLampuPerPeserta × participants × durationHours / 1000
 kWhSound       = soundSystemKw × durationHours
 kWhTotal       = kWhPencahayaan + kWhSound
 emisi          = kWhTotal × faktorEmisi(powerSource)
 ```
+Faktor emisi resmi dinyatakan sebagai **CO₂**, bukan CO₂e — lihat `COEFFICIENTS.md` §2.
 
 **Dimensi 3 — Biaya (Rp).**
 ```
 biayaKonsumsi = participants × (mealsPerPerson × hargaMakanan(foodPackaging)
                              + drinksPerPerson × hargaMinum(drinkVessel))
 biayaEnergi   = kWhTotal × tarifPerKwh(powerSource)
-biayaSampah   = totalSampahKg × tarifAngkutPerKg
+biayaSampah   = residuKeTPA × tarifAngkutPerKg
 biayaAkses    = jumlah biaya fasilitas aksesibilitas yang dipilih
 total         = jumlah semua
 ```
-Fasilitas reusable memerlukan investasi awal yang teramortisasi — dicatat terpisah agar tidak menyesatkan.
+Biaya angkut mengikuti residu ke TPA, bukan timbulan bruto — yang diangkut itulah yang menimbulkan retribusi. Fasilitas reusable memerlukan investasi awal yang teramortisasi — dicatat terpisah sebagai `cost.reusableCapexRp` dan `cost.reusableAmortizedRp` agar tidak menyesatkan.
 
 **Dimensi 4 — Skor inklusi (0–100).**
 ```
-skor = Σ (bobot fasilitas yang tersedia) × penyesuaianRasio
+gap        = Σ bobot fasilitas yang TIDAK tersedia
+needWeight = clamp(minNeedWeight + (1 − minNeedWeight) × (rasioDifabel / rasioAcuan),
+                   minNeedWeight, 1)
+skor       = clamp(100 − gap × needWeight, 0, 100)
 ```
-`penyesuaianRasio` naik jika proporsi tamu difabel tinggi tapi fasilitas minim — artinya kebutuhan tidak terpenuhi menurunkan skor lebih tajam. Bobot per fasilitas ada di `COEFFICIENTS.md`.
+Penalti bersifat **pengurangan atas celah fasilitas**, bukan perkalian atas skor dasar. Versi perkalian gagal justru di kasus terburuk: kalau tidak ada fasilitas sama sekali, skor dasar 0 dikali apa pun tetap 0, sehingga jumlah tamu difabel tidak berpengaruh. Bobot per fasilitas dan alasan parameternya ada di `COEFFICIENTS.md` §4.
 
-**Sustainability score (0–100).** Agregat: sampah 35%, energi 25%, inklusi 25%, biaya 15%. Ditampilkan sebagai satu angka ringkas di dashboard.
+**Sustainability score (0–100).** Agregat berbobot: sampah 35%, energi 25%, inklusi 25%, biaya 15%. Setiap dimensi dinormalisasi dengan mengenumerasi seluruh 108 kombinasi keputusan dari input numerik yang sama, sehingga skor tidak bergeser hanya karena jumlah peserta berbeda. Biaya fasilitas akses dikeluarkan dari dimensi biaya agar inklusi tidak dihukum dua kali.
 
 ### 4.3 Scenario Simulator (F3) — killer feature
 
@@ -144,7 +149,7 @@ Momen demo: satu perubahan → empat angka bergerak serentak.
 
 Engine menghitung ulang untuk setiap perubahan tunggal yang mungkin (ganti kemasan, ganti lampu, tambah ramp, dst.), lalu mengurutkan berdasarkan pengurangan dampak per rupiah. Menampilkan tiga teratas dengan angka konkret.
 
-Contoh keluaran: *"Ganti disposable cup → reusable: −8,2 kg sampah, −Rp 640.000."*
+Contoh keluaran nyata dari engine (baseline 500 peserta, 6 jam): *"Ganti botol plastik → refill station: −15,0 kg timbulan, −Rp 3.109.660."* dan *"Tambah materi huruf besar: +6,8 poin inklusi, Rp 150.000"* — 45 poin inklusi per juta rupiah, empat kali lebih efisien daripada ramp (11 poin per juta).
 
 ### 4.5 AI Insight (F7)
 
@@ -155,16 +160,20 @@ Lihat §6. Bersifat pelengkap — jika API tidak tersedia, dashboard tetap berfu
 ## 5. Arsitektur
 
 ```
-┌─────────────────────────────────────────────┐
-│  Next.js (App Router, TypeScript, Tailwind) │
-│                                              │
-│  src/lib/coefficients.ts   ← konstanta bersumber
-│  src/lib/engine.ts         ← fungsi murni, deterministik
-│  src/lib/recommend.ts      ← urutkan dampak
-│  src/app/page.tsx          ← simulator + dashboard
-│  src/app/api/insight/route.ts ← Claude (server-side)
-└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  Next.js 16 (App Router, TypeScript, Tailwind v4)           │
+│                                                              │
+│  ✅ src/lib/coefficients.ts    ← konstanta bersumber        │
+│  ✅ src/lib/engine.ts          ← fungsi murni, deterministik │
+│  ✅ src/lib/engine.test.ts     ← 32 test Vitest             │
+│  ✅ scripts/demo-numbers.ts    ← generator angka demo       │
+│  ⬜ src/lib/recommend.ts       ← urutkan dampak per rupiah  │
+│  ⬜ src/app/page.tsx           ← simulator + dashboard      │
+│  ⬜ src/app/api/insight/route.ts ← Claude (server-side)     │
+└─────────────────────────────────────────────────────────────┘
 ```
+
+Perintah: `npm test` (32 test), `npm run demo:numbers` (regenerasi angka dokumen), `npm run build`, `npm run dev`.
 
 **Keputusan teknis dan alasannya (untuk Tanya Jawab juri).**
 
@@ -221,18 +230,20 @@ Babak final: Live Demo 25% + Presentasi 25% → skenario demo di `AGENTS.md` §D
 
 ---
 
-## 9. Timeline (5 hari)
+## 9. Timeline
 
-| Hari | Target |
-|---|---|
-| 1 Sep | Scaffold, `coefficients.ts`, `engine.ts` + self-check |
-| 2 Sep | Form input + 4 kartu dampak, hitung ulang real-time |
-| 3 Sep | Perbandingan skenario, rekomendasi, responsif |
-| 4 Sep | AI insight, share URL, **deploy Vercel** |
-| 5 Sep | README, uji lintas perangkat, perbaikan |
-| 6 Sep | Cadangan + kumpulkan (batas 23.59 WIB) |
+| Hari | Target | Status |
+|---|---|---|
+| 1 Sep | Scaffold, `coefficients.ts` | ✅ selesai |
+| 2 Sep | `engine.ts` + 32 test, kalibrasi koefisien ke sumber primer, regenerasi angka dokumen | ✅ selesai |
+| 3 Sep | Form input + 4 kartu dampak, hitung ulang real-time, `recommend.ts` | ⬜ |
+| 4 Sep | Perbandingan skenario, responsif, AI insight, share URL, **deploy Vercel** | ⬜ |
+| 5 Sep | README sesuai template, uji lintas perangkat, perbaikan | ⬜ |
+| 6 Sep | Cadangan + kumpulkan (batas 23.59 WIB) | ⬜ |
 
 Deploy dijadwalkan H-2, bukan hari terakhir. Masalah hosting yang muncul di hari terakhir tidak punya ruang perbaikan.
+
+**Catatan jujur soal jadwal.** Rencana awal menargetkan form input dan empat kartu dampak selesai 2 Sep. Yang benar-benar selesai 2 Sep adalah engine, test, dan kalibrasi koefisien — UI belum mulai. Artinya beban 3–4 Sep sekarang lebih berat dari rencana. Prioritaskan F1–F5 (killer feature) dan biarkan F7 (AI insight) serta F8 (share URL) jadi yang pertama dilepas kalau waktu habis.
 
 ---
 

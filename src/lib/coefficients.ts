@@ -2,25 +2,57 @@
 // dengan status verifikasi dan alasannya. Jangan tulis koefisien di komponen UI.
 
 export const WASTE = {
-  generalPerPersonHour: 0.028,
-  foodResiduePerMeal: 0.12,
-  foodPackaging: { disposable: 0.035, mixed: 0.018, reusable: 0.004 },
-  drinkVessel: { plasticBottle: 0.021, mixed: 0.011, refillStation: 0.001 },
+  /**
+   * TERVERIFIKASI (turunan). SIPSN 0,48 kg/orang/hari x 16,84% fraksi
+   * non-makanan-non-kemasan (komposisi SIPSN 2025) / 16 jam aktif.
+   * Kemasan, wadah minum, dan sisa makanan dihitung terpisah di bawah,
+   * jadi baris ini HANYA sampah umum (tisu, brosur, tiket, dll).
+   */
+  generalPerPersonHour: 0.005,
+  /** TERVERIFIKASI. WRAP 2013: 920.000 t / 8 miliar porsi = 0,115 kg/porsi. */
+  foodResiduePerMeal: 0.115,
+  foodPackaging: {
+    /** TERVERIFIKASI. Kotak kertas 750 ml 20 g + sendok plastik 2,2 g. */
+    disposable: 0.022,
+    mixed: 0.013,
+    reusable: 0.004,
+  },
+  drinkVessel: {
+    /** TERVERIFIKASI. Botol PET 600 ml badan+tutup 14,5 g + label 0,3 g. */
+    plasticBottle: 0.016,
+    mixed: 0.0085,
+    /** Cup PP 2,5 g dibagi ~3 kali pakai di refill station. */
+    refillStation: 0.001,
+  },
   // Faktor residu: pemilahan tidak mengurangi timbulan, hanya yang berakhir di TPA.
   landfillFactor: { none: 1.0, mixed: 0.92, segregated: 0.74 },
-  // Proporsi massa kemasan makanan yang berbahan kertas (sisanya plastik).
-  // Kotak makan kertas berlapis + sendok plastik → mayoritas kertas.
-  packagingPaperShare: { disposable: 0.8, mixed: 0.8, reusable: 0.5 },
+  /**
+   * Proporsi massa kemasan makanan yang berbahan kertas (sisanya plastik).
+   * Disposable: kotak kertas 20 g dari total 22,2 g = 0,90.
+   */
+  packagingPaperShare: { disposable: 0.9, mixed: 0.9, reusable: 0.5 },
 } as const;
 
 export const ENERGY = {
   lightingWattPerPerson: { halogen: 12, led: 4 },
+  /**
+   * kg CO2/kWh (= ton CO2/MWh). CO2 pembakaran, BUKAN CO2e penuh.
+   * pln: TERVERIFIKASI — grid Jawa-Madura-Bali (JAMALI), Combined Margin
+   * ex-post, data 2019, Kepmen ESDM No. 163.K/HK.02/MEM.S/2021.
+   * Luar Jawa-Bali berbeda jauh (Sumatera 0,94; Kalbar 1,63; Lombok 1,61).
+   */
   emissionFactor: { pln: 0.87, generator: 0.72 },
 } as const;
 
 export const COST = {
   mealPerPortion: { disposable: 15000, mixed: 14500, reusable: 14000 },
   drinkPerPortion: { plasticBottle: 4000, mixed: 2450, refillStation: 900 },
+  /**
+   * Rp/kWh. pln: TERVERIFIKASI — golongan B-2/TR (bisnis tegangan rendah,
+   * 6.600 VA-200 kVA), Permen ESDM No. 7/2024 Lampiran III, berlaku
+   * Triwulan III 2026. Venue lain: S-2/TR sekolah Rp 900; P-1/TR gedung
+   * pemerintah Rp 1.699,53; B-3/TM >200 kVA Rp 1.035,78 (LWBP).
+   */
   tariffPerKwh: { pln: 1444.7, generator: 3200 },
   wasteHaulingPerKg: 700,
   reusableCapexPerPerson: 25000,

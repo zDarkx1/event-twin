@@ -78,7 +78,7 @@ for (const { label, params } of SCENARIOS) {
       r.waste.landfillKg,
     )} kg | ${oneDecimal(r.energy.kwh)} kWh | ${oneDecimal(
       r.energy.co2eKg,
-    )} kg CO₂e | ${rupiah(r.cost.totalRp)} | ${Math.round(
+    )} kg CO₂ | ${rupiah(r.cost.totalRp)} | ${Math.round(
       r.inclusion.score,
     )} / 100 | ${Math.round(r.sustainabilityScore)} / 100 |`,
   );
@@ -96,5 +96,45 @@ console.log(`    konsumsi     : ${rupiah(b.cost.consumptionRp)}`);
 console.log(`    energi       : ${rupiah(b.cost.energyRp)}`);
 console.log(`    angkut sampah: ${rupiah(b.cost.wasteHaulingRp)}`);
 console.log(`    akses        : ${rupiah(b.cost.accessibilityRp)}`);
-console.log(`  skor dimensi:`);
-console.log(`    sampah=${Math.round(b.dimensionScores.waste)} energi=${Math.round(b.dimensionScores.energy)} biaya=${Math.round(b.dimensionScores.cost)} inklusi=${Math.round(b.dimensionScores.inclusion)}`);
+console.log("\nDelta satu-keputusan dari baseline (untuk contoh rekomendasi):");
+const CHANGES: Array<{ label: string; params: EventParams }> = [
+  {
+    label: "Botol plastik → refill station",
+    params: { ...BASELINE, drinkVessel: "refillStation" },
+  },
+  {
+    label: "Kemasan disposable → reusable",
+    params: { ...BASELINE, foodPackaging: "reusable" },
+  },
+  { label: "Halogen → LED", params: { ...BASELINE, lighting: "led" } },
+  {
+    label: "Tempat sampah campur → terpilah",
+    params: { ...BASELINE, wasteBins: "segregated" },
+  },
+  { label: "Tambah ramp", params: { ...BASELINE, accessibility: ["ramp"] } },
+  {
+    label: "Tambah materi huruf besar",
+    params: { ...BASELINE, accessibility: ["largePrint"] },
+  },
+];
+
+const signed = (n: number, unit: string) =>
+  `${n >= 0 ? "+" : "−"}${oneDecimal(Math.abs(n))} ${unit}`;
+const signedRp = (n: number) =>
+  `${n >= 0 ? "+" : "−"}Rp ${Math.round(Math.abs(n)).toLocaleString("id-ID")}`;
+
+for (const { label, params } of CHANGES) {
+  const after = simulate(params);
+  console.log(
+    `  ${label}: ${signed(
+      after.waste.generatedKg - b.waste.generatedKg,
+      "kg timbulan",
+    )}, ${signed(
+      after.waste.landfillKg - b.waste.landfillKg,
+      "kg residu TPA",
+    )}, ${signed(after.energy.kwh - b.energy.kwh, "kWh")}, ${signedRp(
+      after.cost.totalRp - b.cost.totalRp,
+    )}, inklusi ${signed(after.inclusion.score - b.inclusion.score, "poin")}`,
+  );
+}
+
