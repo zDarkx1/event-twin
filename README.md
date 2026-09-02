@@ -239,11 +239,10 @@ Buat file `.env.local` di root proyek:
 
 ```bash
 ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxx
-ANTHROPIC_BASE_URL=https://api.anthropic.com # optional
 ANTHROPIC_MODEL=claude-3-5-haiku-20241022     # optional, default haiku
 ```
 
-Salin dari `.env.example` bila perlu. Key hanya dibaca di `src/app/api/insight/route.ts` (server-only, `runtime: nodejs`) — tidak pernah masuk bundle browser. `ANTHROPIC_BASE_URL`/`ANTHROPIC_MODEL` opsional untuk endpoint Anthropic-compatible lain.
+Salin dari `.env.example` bila perlu. Key hanya dibaca di `src/app/api/insight/route.ts` (server-only, `runtime: nodejs`) — tidak pernah masuk bundle browser. `ANTHROPIC_MODEL` opsional.
 
 > ⚠️ `.env.local` sudah masuk `.gitignore`. Jangan pernah commit API key ke repositori.
 
