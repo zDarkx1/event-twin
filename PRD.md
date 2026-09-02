@@ -167,13 +167,14 @@ Lihat §6. Bersifat pelengkap — jika API tidak tersedia, dashboard tetap berfu
 │  ✅ src/lib/engine.ts          ← fungsi murni, deterministik │
 │  ✅ src/lib/engine.test.ts     ← 32 test Vitest             │
 │  ✅ scripts/demo-numbers.ts    ← generator angka demo       │
-│  ⬜ src/lib/recommend.ts       ← urutkan dampak per rupiah  │
-│  ⬜ src/app/page.tsx           ← simulator + dashboard      │
+│  ✅ src/lib/recommend.ts       ← urutkan dampak per rupiah  │
+│  ✅ src/lib/recommend.test.ts  ← 13 test Vitest             │
+│  ✅ src/app/page.tsx           ← simulator + dashboard      │
 │  ⬜ src/app/api/insight/route.ts ← Claude (server-side)     │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Perintah: `npm test` (32 test), `npm run demo:numbers` (regenerasi angka dokumen), `npm run build`, `npm run dev`.
+Perintah: `npm test` (45 test), `npm run demo:numbers` (regenerasi angka dokumen), `npm run build`, `npm run dev`.
 
 **Keputusan teknis dan alasannya (untuk Tanya Jawab juri).**
 
@@ -236,14 +237,15 @@ Babak final: Live Demo 25% + Presentasi 25% → skenario demo di `AGENTS.md` §D
 |---|---|---|
 | 1 Sep | Scaffold, `coefficients.ts` | ✅ selesai |
 | 2 Sep | `engine.ts` + 32 test, kalibrasi koefisien ke sumber primer, regenerasi angka dokumen | ✅ selesai |
-| 3 Sep | Form input + 4 kartu dampak, hitung ulang real-time, `recommend.ts` | ⬜ |
-| 4 Sep | Perbandingan skenario, responsif, AI insight, share URL, **deploy Vercel** | ⬜ |
+| 2 Sep | `recommend.ts` + 13 test, F1 form, F4 dashboard, F3 simulator, F5 perbandingan, F9 responsif | ✅ selesai |
+| 3 Sep | Validasi build (`tsc`, `vitest`, `lint`, `next build`), uji visual 360–1920 px | ⬜ |
+| 4 Sep | AI insight, share URL, **deploy Vercel** | ⬜ |
 | 5 Sep | README sesuai template, uji lintas perangkat, perbaikan | ⬜ |
 | 6 Sep | Cadangan + kumpulkan (batas 23.59 WIB) | ⬜ |
 
 Deploy dijadwalkan H-2, bukan hari terakhir. Masalah hosting yang muncul di hari terakhir tidak punya ruang perbaikan.
 
-**Catatan jujur soal jadwal.** Rencana awal menargetkan form input dan empat kartu dampak selesai 2 Sep. Yang benar-benar selesai 2 Sep adalah engine, test, dan kalibrasi koefisien — UI belum mulai. Artinya beban 3–4 Sep sekarang lebih berat dari rencana. Prioritaskan F1–F5 (killer feature) dan biarkan F7 (AI insight) serta F8 (share URL) jadi yang pertama dilepas kalau waktu habis.
+**Catatan jujur soal jadwal.** Rencana awal menargetkan form input dan empat kartu dampak selesai 2 Sep. Yang selesai 2 Sep justru lebih banyak: engine, test, kalibrasi koefisien, dan seluruh F1–F6 + F9. Yang belum dikerjakan adalah **validasinya** — `tsc`, `vitest`, `lint`, dan `next build` belum berhasil dijalankan sekali pun sejak UI ditulis, jadi kode UI di atas masih berstatus belum terkompilasi. Itu pekerjaan pertama 3 Sep, sebelum fitur baru apa pun. F7 (AI insight) dan F8 (share URL) tetap yang pertama dilepas kalau waktu habis.
 
 ---
 

@@ -109,8 +109,8 @@ Final Sustainability & Inclusion Plan
 
 - Next.js 16 (App Router) / React 19 / TypeScript
 - Tailwind CSS v4
-- **Rule-based simulation engine** (inti nilai teknis, bukan AI) — `src/lib/engine.ts`, fungsi murni, 32 test Vitest
-- Chart library (Recharts) — belum dipasang
+- **Rule-based simulation engine** (inti nilai teknis, bukan AI) — `src/lib/engine.ts`, fungsi murni, 45 test Vitest (32 engine + 13 rekomendasi)
+- Grafik komposisi: **flexbox murni**, tanpa chart library. Satu batang part-to-whole adalah pembagian lebar proporsional — `flex-grow` melakukannya persis di setiap lebar layar, tanpa sumbu dan tanpa JavaScript saat resize. Recharts terpasang tapi tidak dipakai di UI.
 - **Tanpa database, tanpa autentikasi.** State di React; share lewat URL query. PRD §2.2 menjelaskan alasannya, dan itu justru bisa dipertahankan sebagai efisiensi teknologi.
 
 AI tidak jadi inti. Nilai teknis diletakkan pada *simulation engine*, model perhitungan, dan **koefisien yang bersumber jelas** (bukan angka karangan).
