@@ -8,6 +8,9 @@ export const WASTE = {
   drinkVessel: { plasticBottle: 0.021, mixed: 0.011, refillStation: 0.001 },
   // Faktor residu: pemilahan tidak mengurangi timbulan, hanya yang berakhir di TPA.
   landfillFactor: { none: 1.0, mixed: 0.92, segregated: 0.74 },
+  // Proporsi massa kemasan makanan yang berbahan kertas (sisanya plastik).
+  // Kotak makan kertas berlapis + sendok plastik → mayoritas kertas.
+  packagingPaperShare: { disposable: 0.8, mixed: 0.8, reusable: 0.5 },
 } as const;
 
 export const ENERGY = {
@@ -39,6 +42,22 @@ export const SCORE_WEIGHTS = {
   energy: 0.25,
   inclusion: 0.25,
   cost: 0.15,
+} as const;
+
+// Parameter penyesuaian kebutuhan pada skor inklusi. Alasan ada di COEFFICIENTS.md §4.2.
+export const INCLUSION = {
+  /**
+   * Proporsi tamu difabel yang dianggap "kebutuhan aksesibilitas penuh".
+   * Di atas rasio ini, fasilitas yang tidak tersedia dihitung sebagai
+   * kegagalan sepenuhnya.
+   */
+  needReferenceRatio: 0.1,
+  /**
+   * Bobot kebutuhan minimum, dipakai bahkan ketika tidak ada tamu difabel
+   * yang didata. Bukan nol karena disabilitas tak terlihat dan tamu tak
+   * terdata selalu ada — acara tanpa fasilitas tetap menutup akses bagi mereka.
+   */
+  minNeedWeight: 0.55,
 } as const;
 
 export const LIMITS = {
