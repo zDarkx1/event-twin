@@ -139,7 +139,7 @@ Ini yang mencegah dokumen dan aplikasi menampilkan angka berbeda saat live demo.
 | [React](https://react.dev) | 19.2.8 | UI library |
 | [TypeScript](https://www.typescriptlang.org) | 5.x | Type safety pada engine dan komponen; mode `strict` |
 | [Tailwind CSS](https://tailwindcss.com) | 4.x | Styling utility-first, mobile-first responsif |
-| [Vitest](https://vitest.dev) | 3.2.4 | Unit test engine simulasi (32 test) |
+| [Vitest](https://vitest.dev) | 3.2.4 | Unit test engine simulasi + recommendation (45 test) |
 | [ESLint](https://eslint.org) | 9.x | Linting dengan `eslint-config-next` |
 | [Anthropic SDK](https://github.com/anthropics/anthropic-sdk-typescript) | 0.122.0 | AI Insight — menarasikan hasil simulasi (opsional) |
 
@@ -172,14 +172,27 @@ event-twin/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx              # Root layout
-│   │   ├── page.tsx                # Simulator + dashboard
-│   │   ├── globals.css             # Tailwind + design token
-│   │   └── api/insight/route.ts    # Endpoint AI (server-side)
+│   │   ├── page.tsx                # Halaman simulator
+│   │   └── globals.css             # Tailwind + design token
+│   ├── components/
+│   │   ├── scenario-simulator.tsx  # F3 — menyatukan form, dashboard, rekomendasi
+│   │   ├── event-form.tsx          # F1 — 13 field parameter acara
+│   │   ├── impact-dashboard.tsx    # F4 — empat kartu + sustainability score
+│   │   ├── impact-card.tsx         # Satu kartu dampak + delta
+│   │   ├── waste-composition-chart.tsx  # Batang part-to-whole (flexbox murni)
+│   │   ├── recommendation-list.tsx # F6 — tiga langkah berdampak terbesar
+│   │   ├── scenario-comparison.tsx # F5 — tabel baseline vs skenario
+│   │   ├── field.tsx               # Pembungkus label + hint yang terhubung
+│   │   └── ui/                     # Primitif shadcn/ui
 │   └── lib/
 │       ├── coefficients.ts         # Satu-satunya sumber koefisien
 │       ├── engine.ts               # Engine simulasi — fungsi murni
-│       ├── engine.test.ts          # 32 unit test
-│       └── recommend.ts            # Peringkat dampak per rupiah
+│       ├── engine.test.ts          # 32 unit test engine
+│       ├── recommend.ts            # Peringkat dampak per rupiah
+│       ├── recommend.test.ts       # 13 unit test rekomendasi
+│       ├── defaults.ts             # Nilai awal Event Builder
+│       ├── labels.ts               # Label opsi bahasa Indonesia
+│       └── format.ts               # Format angka id-ID
 ├── scripts/
 │   └── demo-numbers.ts             # Generator angka demo dari engine
 ├── COEFFICIENTS.md                 # Sumber & status setiap koefisien
@@ -233,7 +246,7 @@ ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxx
 **4. Verifikasi instalasi**
 
 ```bash
-npm test     # 32 test harus lolos
+npm test     # 45 test harus lolos
 npm run build # build produksi harus sukses
 ```
 
@@ -256,7 +269,7 @@ Buka [http://localhost:3000](http://localhost:3000).
 | `npm run dev` | Development server dengan hot reload |
 | `npm run build` | Build produksi |
 | `npm start` | Jalankan hasil build produksi |
-| `npm test` | Jalankan seluruh unit test (32 test) |
+| `npm test` | Jalankan seluruh unit test (45 test) |
 | `npm run test:watch` | Test dalam mode watch |
 | `npm run lint` | Periksa kualitas kode dengan ESLint |
 | `npm run demo:numbers` | Generate tabel angka demo dari engine |
@@ -338,7 +351,7 @@ Perhatikan skenario ketiga: totalnya **lebih mahal** karena enam fasilitas akses
 npm test
 ```
 
-32 unit test menutupi keempat dimensi engine, normalisasi skor, validasi input, dan satu test regresi khusus untuk formula inklusi.
+45 unit test menutupi keempat dimensi engine, normalisasi skor, validasi input, peringkat rekomendasi, dan satu test regresi khusus untuk formula inklusi.
 
 Contoh yang diuji:
 
@@ -347,6 +360,7 @@ Contoh yang diuji:
 - Sustainability score tidak bergeser drastis hanya karena jumlah peserta berbeda (100 vs 5.000 peserta, selisih < 10 poin).
 - Skor inklusi membedakan 2 tamu difabel dari 200 tamu difabel walaupun sama-sama tanpa fasilitas — perilaku yang gagal pada formula perkalian versi awal.
 - `clampParams()` menangani nilai di luar rentang dan `NaN`.
+- Rekomendasi tidak pernah mengusulkan mencabut fasilitas akses yang sudah ada, dan tidak pernah mengusulkan nilai yang sedang dipakai.
 
 ---
 
