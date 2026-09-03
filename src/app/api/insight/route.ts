@@ -1,4 +1,3 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { buildInsightPrompt } from "@/lib/ai-prompt";
 import { simulate } from "@/lib/engine";
@@ -90,30 +89,73 @@ export async function POST(req: Request) {
   );
 
   try {
-    const client = new Anthropic({
-      apiKey: key,
-      // Base URL bisa diarahkan ke endpoint Anthropic-compatible mana pun — PRD §6.
-      ...(process.env.ANTHROPIC_BASE_URL
-        ? { baseURL: process.env.ANTHROPIC_BASE_URL }
-        : {}),
+    // Endpoint OpenAI-compatible (`/v1/chat/completions`, Bearer token) — bentuk
+    // yang dilayani gateway di ANTHROPIC_BASE_URL. Dipanggil dengan fetch bawaan,
+    // tanpa SDK: satu request non-stream tidak butuh lapisan tambahan, dan error
+    // upstream terbaca apa adanya di log (status + body).
+    const base = (process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com")
+      .replace(/\/+$/, "");
+
+    // Gateway reseller bisa jauh lebih lambat dari API langsung: prompt EventTwin
+    // ~3 KB dan keluaran ratusan token. 90 detik dipilih supaya lambat tidak
+    // terbaca sebagai mati; bisa dipendekkan lewat env kalau demo butuh gagal cepat.
+    const timeoutMs = Number(process.env.AI_TIMEOUT_MS) || 90_000;
+    const startedAt = Date.now();
+
+    const upstream = await fetch(`${base}/v1/chat/completions`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model: process.env.ANTHROPIC_MODEL || DEFAULT_MODEL,
+        temperature: 0.2,
+        // System prompt jadi pesan pertama — begitu skema chat completions
+        // membawanya; tidak ada field `system` terpisah.
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+      }),
+      signal: AbortSignal.timeout(timeoutMs),
     });
 
-    const response = await client.messages.create(
-      {
-        model: process.env.ANTHROPIC_MODEL || DEFAULT_MODEL,
-        max_tokens: 968,
-        temperature: 0.2,
-        system,
-        messages: [{ role: "user", content: user }],
-      },
-      { signal: AbortSignal.timeout(20_000) },
+    console.info(
+      `[ai-insight] upstream ${upstream.status} in ${Date.now() - startedAt}ms`,
     );
 
-    const insight = response.content
-      .filter((block): block is Anthropic.TextBlock => block.type === "text")
-      .map((block) => block.text)
-      .join("\n")
-      .trim();
+    if (!upstream.ok) {
+      // Body ikut dicatat: di sinilah "model tidak dikenal" atau "key ditolak"
+      // sebenarnya tertulis. Tanpa ini penyebabnya tidak pernah kelihatan.
+      const detail = await upstream.text().catch(() => "");
+      console.warn(
+        `[ai-insight] upstream ${upstream.status} ${upstream.statusText}: ${detail.slice(0, 500)}`,
+      );
+      return NextResponse.json({ error: "AI unavailable" }, { status: 500 });
+    }
+
+    const data = (await upstream.json()) as {
+      choices?: Array<{ message?: { content?: unknown } }>;
+    };
+
+    const raw = data.choices?.[0]?.message?.content;
+    // Sebagian gateway mengembalikan content sebagai array blok, bukan string.
+    const insight = (
+      typeof raw === "string"
+        ? raw
+        : Array.isArray(raw)
+          ? raw
+              .map((b) =>
+                typeof b === "string"
+                  ? b
+                  : typeof (b as { text?: unknown })?.text === "string"
+                    ? ((b as { text: string }).text)
+                    : "",
+              )
+              .join("")
+          : ""
+    ).trim();
 
     if (!insight) {
       console.warn("[ai-insight] empty response");

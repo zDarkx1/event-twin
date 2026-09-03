@@ -218,7 +218,7 @@ Perintah: `npm test` (45 test), `npm run demo:numbers` (regenerasi angka dokumen
 
 Batas ini tegas karena juri akan menguji kredibilitas angka. Engine menghasilkan angka; AI menjelaskan artinya. System prompt melarang model mengubah nilai secara eksplisit.
 
-Implementasi: `@anthropic-ai/sdk`, endpoint `/v1/messages`, `temperature: 0.2` (keluaran stabil untuk demo) dan `max_tokens: 968`. Base URL dapat dikonfigurasi lewat `ANTHROPIC_BASE_URL` sehingga endpoint Anthropic-compatible mana pun bisa dipakai; model lewat `ANTHROPIC_MODEL`. Key dibaca dari environment (`NEW_API_KEY`, atau `ANTHROPIC_API_KEY` untuk setup standar), tidak pernah masuk bundle klien.
+Implementasi: `fetch` bawaan ke endpoint `/v1/chat/completions` (skema OpenAI-compatible, autentikasi `Bearer`), tanpa SDK — satu request non-stream tidak butuh lapisan tambahan, dan error upstream (status + body) terbaca apa adanya di log server, bukan terbungkus exception. `temperature: 0.2` (keluaran stabil untuk demo). Base URL dapat dikonfigurasi lewat `ANTHROPIC_BASE_URL` sehingga gateway OpenAI-compatible mana pun bisa dipakai; model lewat `ANTHROPIC_MODEL`. Key dibaca dari environment (`NEW_API_KEY`, atau `ANTHROPIC_API_KEY` untuk setup standar), tidak pernah masuk bundle klien.
 
 Perlindungan endpoint (`/api/insight` adalah satu-satunya jalur yang memanggil API berbayar):
 
@@ -228,7 +228,7 @@ Perlindungan endpoint (`/api/insight` adalah satu-satunya jalur yang memanggil A
 | Batas body | 16 KB. Lebih besar → `413`, ditolak sebelum di-parse |
 | Validasi | Seluruh field dicek tipe, enum, dan duplikat; field asing dibuang. Gagal → `400` |
 | Perhitungan | Angka dihitung ulang di server dari params; nilai dari klien tidak pernah dipercaya |
-| Timeout | 20 detik, lalu dibatalkan |
+| Timeout | 90 detik, lalu dibatalkan. Dapat diatur lewat `AI_TIMEOUT_MS` |
 | Pesan error | Generik ke klien; detail hanya masuk log server |
 
 Rate limiter menyimpan state di memori proses. Di Vercel setiap instance punya memorinya sendiri, jadi batas efektifnya adalah 10 × jumlah instance aktif — memadai untuk demo, dan bisa diganti ke penyimpanan terdistribusi tanpa mengubah pemanggilnya.

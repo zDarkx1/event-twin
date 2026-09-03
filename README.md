@@ -151,7 +151,8 @@ Ini yang mencegah dokumen dan aplikasi menampilkan angka berbeda saat live demo.
 | [Tailwind CSS](https://tailwindcss.com) | 4.x | Styling utility-first, mobile-first responsif |
 | [Vitest](https://vitest.dev) | 3.2.4 | Unit test engine, rekomendasi, prompt AI, validasi request, rate limit, share URL (104 test) |
 | [ESLint](https://eslint.org) | 9.x | Linting dengan `eslint-config-next` |
-| [Anthropic SDK](https://github.com/anthropics/anthropic-sdk-typescript) | 0.122.0 | AI Insight — menarasikan hasil simulasi (opsional) |
+
+> AI Insight memanggil endpoint `/v1/chat/completions` lewat `fetch` bawaan — tanpa SDK, tanpa dependency runtime tambahan.
 
 ### Keputusan teknis dan alasannya
 
@@ -261,7 +262,7 @@ Buat file `.env.local` di root proyek:
 
 ```bash
 NEW_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-ANTHROPIC_BASE_URL=https://api.anthropic.com    # opsional — endpoint Anthropic-compatible mana pun
+ANTHROPIC_BASE_URL=https://api.anthropic.com    # opsional — gateway OpenAI-compatible mana pun
 ANTHROPIC_MODEL=claude-opus-5                   # opsional
 ```
 
