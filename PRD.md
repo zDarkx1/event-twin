@@ -155,6 +155,20 @@ Contoh keluaran nyata dari engine (baseline 500 peserta, 6 jam): *"Ganti botol p
 
 Lihat §6. Bersifat pelengkap — jika API tidak tersedia, dashboard tetap berfungsi penuh.
 
+### 4.6 Share via URL (F8)
+
+Seluruh parameter simulasi di-encode ke query string, sehingga hasil simulasi bisa dibagikan tanpa akun dan tanpa database.
+
+**Bentuk tautan.** Kunci disingkat (`p` peserta, `h` durasi, `fp` kemasan, `lt` lampu, `ac` daftar fasilitas, dst.), dan **hanya nilai yang berbeda dari default yang ditulis**. Keputusan baseline memakai prefiks `b` dan hanya muncul kalau berbeda dari skenario aktif — pada kasus paling umum (pengguna belum mengubah baseline) tidak ada satu pun kunci `b`. Tautan yang dibagikan lewat WhatsApp sering terpotong saat ditampilkan, jadi panjangnya bukan hal kosmetik.
+
+Contoh: `?p=1200&fp=reusable&dv=refillStation&lt=led&ac=ramp,largePrint`
+
+**Dibaca di server, bukan di klien.** `searchParams` diselesaikan di Server Component dan diteruskan sebagai props ke simulator. Membaca `window.location` saat inisialisasi state akan menyebabkan hydration mismatch, dan versi effect-nya menghasilkan kedipan nilai default sebelum tautan diterapkan. Dengan pendekatan ini HTML yang dikirim server sudah memuat angka skenario yang benar.
+
+**Decode tidak pernah gagal.** Nilai rusak (`?p=banyak`), enum asing (`?lt=obor`), fasilitas tak dikenal, dan duplikat jatuh ke default atau dibuang. Angka di luar rentang dijepit `clampParams()`, bukan ditolak — tautan lama harus tetap membuka aplikasi.
+
+**URL bar tidak diperbarui saat kontrol digeser.** Menulis ke `history` setiap slider bergerak akan membanjiri riwayat browser dan membuat tombol Back tidak berguna. Tautan dihitung saat tombol salin ditekan. Kalau Clipboard API ditolak (konteks non-HTTPS), tautannya ditampilkan di kolom teks agar tetap bisa disalin manual.
+
 ---
 
 ## 5. Arsitektur
@@ -177,7 +191,8 @@ Lihat §6. Bersifat pelengkap — jika API tidak tersedia, dashboard tetap berfu
 │  ✅ src/app/api/insight/route.ts   ← Claude (server-side)    │
 │  ✅ src/app/page.tsx + components/ ← simulator + dashboard   │
 │  ✅ scripts/demo-numbers.ts        ← generator angka demo    │
-│  ⬜ share via URL (F8)                                       │
+│  ✅ src/lib/share-url.ts           ← encode/decode F8         │
+│  ✅ src/lib/share-url.test.ts      ← 20 test                 │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -265,7 +280,7 @@ Babak final: Live Demo 25% + Presentasi 25% → skenario demo di `AGENTS.md` §D
 
 Deploy dijadwalkan H-2, bukan hari terakhir. Masalah hosting yang muncul di hari terakhir tidak punya ruang perbaikan.
 
-**Catatan jujur soal jadwal.** Rencana awal menargetkan form input dan empat kartu dampak selesai 2 Sep. Yang selesai 2–3 Sep lebih banyak: engine, kalibrasi koefisien, F1–F6, F9, dan F7 (AI Insight). Seluruhnya sudah divalidasi — `tsc`, `vitest` (84 test), `lint`, dan `next build` berjalan bersih. Sisa yang belum: F8 (share URL) dan deploy Vercel. F8 tetap yang pertama dilepas kalau waktu habis.
+**Catatan jujur soal jadwal.** Rencana awal menargetkan form input dan empat kartu dampak selesai 2 Sep. Yang selesai 2–3 Sep: engine, kalibrasi koefisien, F1–F9 lengkap. Seluruhnya divalidasi — `tsc`, `vitest` (104 test), `lint`, dan `next build` berjalan bersih. Sisa yang belum: **deploy Vercel**, kalibrasi harga katering ke harga lokal, dan verifikasi happy path AI Insight (endpoint yang dipakai saat ini diblokir Cloudflare dari IP datacenter, jadi respons sungguhan belum pernah diuji).
 
 ---
 

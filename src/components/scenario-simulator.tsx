@@ -28,6 +28,7 @@ import { EventForm } from "@/components/event-form";
 import { ImpactDashboard } from "@/components/impact-dashboard";
 import { RecommendationList } from "@/components/recommendation-list";
 import { ScenarioComparison } from "@/components/scenario-comparison";
+import { ShareLink } from "@/components/share-link";
 
 /**
  * Strip ringkas yang menempel di atas layar sempit.
@@ -83,15 +84,26 @@ function StickySummary({ result }: { result: SimulationResult }) {
   );
 }
 
-export function ScenarioSimulator() {
-  const [params, setParams] = useState<EventParams>(DEFAULT_PARAMS);
+interface ScenarioSimulatorProps {
+  /**
+   * Nilai awal simulator. Diselesaikan di Server Component dari `searchParams`
+   * (F8), bukan dibaca dari `window.location` di klien: dengan begitu HTML yang
+   * dikirim server sudah memuat angka skenario yang benar, jadi tidak ada
+   * hydration mismatch dan tidak ada kedipan nilai default sebelum tautan
+   * diterapkan.
+   */
+  initial: { scenario: EventParams; baseline: EventParams };
+}
+
+export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
+  const [params, setParams] = useState<EventParams>(initial.scenario);
   /**
    * Baseline dibekukan sebagai PARAMS, bukan sebagai hasil: ketika jumlah
    * peserta diubah, baseline harus ikut berskala supaya perbandingannya adil.
    * Yang dibekukan adalah KEPUTUSAN penyelenggaraan, bukan ukuran acaranya.
    */
   const [baselineDecisions, setBaselineDecisions] = useState<EventParams>(
-    DEFAULT_PARAMS,
+    initial.baseline,
   );
 
   const scenario = useMemo(() => clampParams(params), [params]);
@@ -153,9 +165,10 @@ export function ScenarioSimulator() {
             <CardContent>
               <EventForm params={params} onChange={update} />
             </CardContent>
-            <CardContent className="border-t pt-4">
+            <CardContent className="grid gap-2 border-t pt-4">
+              <ShareLink scenario={scenario} baseline={baseline} />
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={reset}
                 className="w-full"

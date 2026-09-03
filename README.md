@@ -94,6 +94,16 @@ Temuan seperti ini tidak terlihat tanpa model.
 
 Bandingkan beberapa strategi berdampingan pada keempat dimensi sekaligus.
 
+### 🔗 Share via URL
+
+Seluruh parameter simulasi di-encode ke query string, jadi hasil simulasi bisa dibagikan ke panitia lain tanpa akun dan tanpa database:
+
+```
+https://…/?p=1200&fp=reusable&dv=refillStation&lt=led&ac=ramp,largePrint
+```
+
+Hanya nilai yang berbeda dari default yang ikut ditulis, sehingga tautannya tetap pendek. Query string dibaca di server, jadi HTML yang diterima penerima sudah memuat angka skenario yang benar — bukan angka default yang lalu berubah. Tautan dengan nilai rusak tetap membuka aplikasi dengan nilai default, bukan halaman error.
+
 ---
 
 ## 3. Kredibilitas Angka
@@ -139,7 +149,7 @@ Ini yang mencegah dokumen dan aplikasi menampilkan angka berbeda saat live demo.
 | [React](https://react.dev) | 19.2.8 | UI library |
 | [TypeScript](https://www.typescriptlang.org) | 5.x | Type safety pada engine dan komponen; mode `strict` |
 | [Tailwind CSS](https://tailwindcss.com) | 4.x | Styling utility-first, mobile-first responsif |
-| [Vitest](https://vitest.dev) | 3.2.4 | Unit test engine, rekomendasi, prompt AI, validasi request, rate limit (84 test) |
+| [Vitest](https://vitest.dev) | 3.2.4 | Unit test engine, rekomendasi, prompt AI, validasi request, rate limit, share URL (104 test) |
 | [ESLint](https://eslint.org) | 9.x | Linting dengan `eslint-config-next` |
 | [Anthropic SDK](https://github.com/anthropics/anthropic-sdk-typescript) | 0.122.0 | AI Insight — menarasikan hasil simulasi (opsional) |
 
@@ -184,6 +194,7 @@ event-twin/
 │   │   ├── recommendation-list.tsx # F6 — tiga langkah berdampak terbesar
 │   │   ├── scenario-comparison.tsx # F5 — tabel baseline vs skenario
 │   │   ├── ai-insight.tsx          # F7 — panel narasi AI
+│   │   ├── share-link.tsx          # F8 — tombol salin tautan
 │   │   ├── field.tsx               # Pembungkus label + hint yang terhubung
 │   │   └── ui/                     # Primitif shadcn/ui
 │   └── lib/
@@ -198,6 +209,8 @@ event-twin/
 │       ├── insight-request.test.ts # 21 unit test validasi
 │       ├── rate-limit.ts           # Pelindung kuota API
 │       ├── rate-limit.test.ts      # 8 unit test rate limit
+│       ├── share-url.ts            # F8 — encode/decode query string
+│       ├── share-url.test.ts       # 20 unit test share URL
 │       ├── defaults.ts             # Nilai awal Event Builder
 │       ├── labels.ts               # Label opsi bahasa Indonesia
 │       └── format.ts               # Format angka id-ID
@@ -259,7 +272,7 @@ Salin dari `.env.example` bila perlu. Key hanya dibaca di `src/app/api/insight/r
 **4. Verifikasi instalasi**
 
 ```bash
-npm test     # 84 test harus lolos
+npm test     # 104 test harus lolos
 npm run build # build produksi harus sukses
 ```
 
@@ -282,7 +295,7 @@ Buka [http://localhost:3000](http://localhost:3000).
 | `npm run dev` | Development server dengan hot reload |
 | `npm run build` | Build produksi |
 | `npm start` | Jalankan hasil build produksi |
-| `npm test` | Jalankan seluruh unit test (84 test) |
+| `npm test` | Jalankan seluruh unit test (104 test) |
 | `npm run test:watch` | Test dalam mode watch |
 | `npm run lint` | Periksa kualitas kode dengan ESLint |
 | `npm run demo:numbers` | Generate tabel angka demo dari engine |
@@ -364,7 +377,7 @@ Perhatikan skenario ketiga: totalnya **lebih mahal** karena enam fasilitas akses
 npm test
 ```
 
-84 unit test menutupi keempat dimensi engine, normalisasi skor, validasi input, peringkat rekomendasi, prompt AI Insight, validasi body request endpoint, rate limiter, dan satu test regresi khusus untuk formula inklusi.
+104 unit test menutupi keempat dimensi engine, normalisasi skor, validasi input, peringkat rekomendasi, prompt AI Insight, validasi body request endpoint, rate limiter, encode/decode share URL, dan satu test regresi khusus untuk formula inklusi.
 
 Contoh yang diuji:
 
@@ -376,6 +389,7 @@ Contoh yang diuji:
 - Rekomendasi tidak pernah mengusulkan mencabut fasilitas akses yang sudah ada, dan tidak pernah mengusulkan nilai yang sedang dipakai.
 - Endpoint `/api/insight` menolak enum di luar daftar, duplikat fasilitas, `NaN`, `null`, angka berbentuk string, dan membuang field asing dari body.
 - Rate limiter memakai jendela geser (bukan jendela tetap) dan tidak membiarkan peta identitas tumbuh tanpa batas.
+- Share URL bolak-balik utuh, membuang kunci yang sama dengan default, dan jatuh ke default (bukan error) saat nilainya rusak.
 
 ---
 
