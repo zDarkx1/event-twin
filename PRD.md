@@ -163,14 +163,21 @@ Lihat §6. Bersifat pelengkap — jika API tidak tersedia, dashboard tetap berfu
 ┌─────────────────────────────────────────────────────────────┐
 │  Next.js 16 (App Router, TypeScript, Tailwind v4)           │
 │                                                              │
-│  ✅ src/lib/coefficients.ts    ← konstanta bersumber        │
-│  ✅ src/lib/engine.ts          ← fungsi murni, deterministik │
-│  ✅ src/lib/engine.test.ts     ← 32 test Vitest             │
-│  ✅ scripts/demo-numbers.ts    ← generator angka demo       │
-│  ✅ src/lib/recommend.ts       ← urutkan dampak per rupiah  │
-│  ✅ src/lib/recommend.test.ts  ← 13 test Vitest             │
-│  ✅ src/app/page.tsx           ← simulator + dashboard      │
-│  ⬜ src/app/api/insight/route.ts ← Claude (server-side)     │
+│  ✅ src/lib/coefficients.ts        ← konstanta bersumber     │
+│  ✅ src/lib/engine.ts              ← fungsi murni            │
+│  ✅ src/lib/engine.test.ts         ← 32 test                 │
+│  ✅ src/lib/recommend.ts           ← dampak per rupiah       │
+│  ✅ src/lib/recommend.test.ts      ← 13 test                 │
+│  ✅ src/lib/ai-prompt.ts           ← prompt F7, fungsi murni │
+│  ✅ src/lib/ai-prompt.test.ts      ← 10 test                 │
+│  ✅ src/lib/insight-request.ts     ← validasi body request   │
+│  ✅ src/lib/insight-request.test.ts ← 21 test                │
+│  ✅ src/lib/rate-limit.ts          ← pelindung kuota API      │
+│  ✅ src/lib/rate-limit.test.ts     ← 8 test                  │
+│  ✅ src/app/api/insight/route.ts   ← Claude (server-side)    │
+│  ✅ src/app/page.tsx + components/ ← simulator + dashboard   │
+│  ✅ scripts/demo-numbers.ts        ← generator angka demo    │
+│  ⬜ share via URL (F8)                                       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -196,7 +203,20 @@ Perintah: `npm test` (45 test), `npm run demo:numbers` (regenerasi angka dokumen
 
 Batas ini tegas karena juri akan menguji kredibilitas angka. Engine menghasilkan angka; AI menjelaskan artinya. System prompt melarang model mengubah nilai secara eksplisit.
 
-Implementasi: `@anthropic-ai/sdk`, endpoint `/v1/messages`, `effort: "low"` (respons cepat untuk demo). Base URL dapat dikonfigurasi lewat env var sehingga endpoint Anthropic-compatible mana pun bisa dipakai. Key dibaca dari environment, tidak pernah masuk bundle klien.
+Implementasi: `@anthropic-ai/sdk`, endpoint `/v1/messages`, `temperature: 0.2` (keluaran stabil untuk demo) dan `max_tokens: 968`. Base URL dapat dikonfigurasi lewat `ANTHROPIC_BASE_URL` sehingga endpoint Anthropic-compatible mana pun bisa dipakai; model lewat `ANTHROPIC_MODEL`. Key dibaca dari environment (`NEW_API_KEY`, atau `ANTHROPIC_API_KEY` untuk setup standar), tidak pernah masuk bundle klien.
+
+Perlindungan endpoint (`/api/insight` adalah satu-satunya jalur yang memanggil API berbayar):
+
+| Lapis | Perilaku |
+|---|---|
+| Rate limit | 10 request/menit per IP, jendela geser. Kuota habis → `429` + header `Retry-After` |
+| Batas body | 16 KB. Lebih besar → `413`, ditolak sebelum di-parse |
+| Validasi | Seluruh field dicek tipe, enum, dan duplikat; field asing dibuang. Gagal → `400` |
+| Perhitungan | Angka dihitung ulang di server dari params; nilai dari klien tidak pernah dipercaya |
+| Timeout | 20 detik, lalu dibatalkan |
+| Pesan error | Generik ke klien; detail hanya masuk log server |
+
+Rate limiter menyimpan state di memori proses. Di Vercel setiap instance punya memorinya sendiri, jadi batas efektifnya adalah 10 × jumlah instance aktif — memadai untuk demo, dan bisa diganti ke penyimpanan terdistribusi tanpa mengubah pemanggilnya.
 
 Kegagalan AI ditangani dengan diam: jika request gagal atau ditolak, panel insight tidak muncul dan dashboard tetap utuh. Live demo tidak boleh bergantung pada jaringan.
 
@@ -245,7 +265,7 @@ Babak final: Live Demo 25% + Presentasi 25% → skenario demo di `AGENTS.md` §D
 
 Deploy dijadwalkan H-2, bukan hari terakhir. Masalah hosting yang muncul di hari terakhir tidak punya ruang perbaikan.
 
-**Catatan jujur soal jadwal.** Rencana awal menargetkan form input dan empat kartu dampak selesai 2 Sep. Yang selesai 2 Sep justru lebih banyak: engine, test, kalibrasi koefisien, dan seluruh F1–F6 + F9. Yang belum dikerjakan adalah **validasinya** — `tsc`, `vitest`, `lint`, dan `next build` belum berhasil dijalankan sekali pun sejak UI ditulis, jadi kode UI di atas masih berstatus belum terkompilasi. Itu pekerjaan pertama 3 Sep, sebelum fitur baru apa pun. F7 (AI insight) dan F8 (share URL) tetap yang pertama dilepas kalau waktu habis.
+**Catatan jujur soal jadwal.** Rencana awal menargetkan form input dan empat kartu dampak selesai 2 Sep. Yang selesai 2–3 Sep lebih banyak: engine, kalibrasi koefisien, F1–F6, F9, dan F7 (AI Insight). Seluruhnya sudah divalidasi — `tsc`, `vitest` (84 test), `lint`, dan `next build` berjalan bersih. Sisa yang belum: F8 (share URL) dan deploy Vercel. F8 tetap yang pertama dilepas kalau waktu habis.
 
 ---
 

@@ -139,7 +139,7 @@ Ini yang mencegah dokumen dan aplikasi menampilkan angka berbeda saat live demo.
 | [React](https://react.dev) | 19.2.8 | UI library |
 | [TypeScript](https://www.typescriptlang.org) | 5.x | Type safety pada engine dan komponen; mode `strict` |
 | [Tailwind CSS](https://tailwindcss.com) | 4.x | Styling utility-first, mobile-first responsif |
-| [Vitest](https://vitest.dev) | 3.2.4 | Unit test engine simulasi + recommendation (45 test) |
+| [Vitest](https://vitest.dev) | 3.2.4 | Unit test engine, rekomendasi, prompt AI, validasi request, rate limit (84 test) |
 | [ESLint](https://eslint.org) | 9.x | Linting dengan `eslint-config-next` |
 | [Anthropic SDK](https://github.com/anthropics/anthropic-sdk-typescript) | 0.122.0 | AI Insight — menarasikan hasil simulasi (opsional) |
 
@@ -173,7 +173,8 @@ event-twin/
 │   ├── app/
 │   │   ├── layout.tsx              # Root layout
 │   │   ├── page.tsx                # Halaman simulator
-│   │   └── globals.css             # Tailwind + design token
+│   │   ├── globals.css             # Tailwind + design token
+│   │   └── api/insight/route.ts    # F7 — endpoint AI (server-side)
 │   ├── components/
 │   │   ├── scenario-simulator.tsx  # F3 — menyatukan form, dashboard, rekomendasi
 │   │   ├── event-form.tsx          # F1 — 13 field parameter acara
@@ -182,6 +183,7 @@ event-twin/
 │   │   ├── waste-composition-chart.tsx  # Batang part-to-whole (flexbox murni)
 │   │   ├── recommendation-list.tsx # F6 — tiga langkah berdampak terbesar
 │   │   ├── scenario-comparison.tsx # F5 — tabel baseline vs skenario
+│   │   ├── ai-insight.tsx          # F7 — panel narasi AI
 │   │   ├── field.tsx               # Pembungkus label + hint yang terhubung
 │   │   └── ui/                     # Primitif shadcn/ui
 │   └── lib/
@@ -190,11 +192,18 @@ event-twin/
 │       ├── engine.test.ts          # 32 unit test engine
 │       ├── recommend.ts            # Peringkat dampak per rupiah
 │       ├── recommend.test.ts       # 13 unit test rekomendasi
+│       ├── ai-prompt.ts            # Prompt F7 — fungsi murni
+│       ├── ai-prompt.test.ts       # 10 unit test prompt
+│       ├── insight-request.ts      # Validasi body request /api/insight
+│       ├── insight-request.test.ts # 21 unit test validasi
+│       ├── rate-limit.ts           # Pelindung kuota API
+│       ├── rate-limit.test.ts      # 8 unit test rate limit
 │       ├── defaults.ts             # Nilai awal Event Builder
 │       ├── labels.ts               # Label opsi bahasa Indonesia
 │       └── format.ts               # Format angka id-ID
 ├── scripts/
 │   └── demo-numbers.ts             # Generator angka demo dari engine
+├── .env.example                    # Contoh konfigurasi environment
 ├── COEFFICIENTS.md                 # Sumber & status setiap koefisien
 ├── PRD.md                          # Spesifikasi produk
 └── AGENTS.md                       # Konsep & materi pitching
@@ -238,15 +247,19 @@ Langkah ini **hanya** diperlukan kalau ingin mengaktifkan fitur AI Insight. Tanp
 Buat file `.env.local` di root proyek:
 
 ```bash
-ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxx
+NEW_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ANTHROPIC_BASE_URL=https://api.anthropic.com    # opsional — endpoint Anthropic-compatible mana pun
+ANTHROPIC_MODEL=claude-opus-5                   # opsional
 ```
+
+Salin dari `.env.example` bila perlu. Key hanya dibaca di `src/app/api/insight/route.ts` (server-only, `runtime: nodejs`) — tidak pernah masuk bundle browser. Nama `ANTHROPIC_API_KEY` juga masih didukung untuk setup Anthropic standar.
 
 > ⚠️ `.env.local` sudah masuk `.gitignore`. Jangan pernah commit API key ke repositori.
 
 **4. Verifikasi instalasi**
 
 ```bash
-npm test     # 45 test harus lolos
+npm test     # 84 test harus lolos
 npm run build # build produksi harus sukses
 ```
 
@@ -269,7 +282,7 @@ Buka [http://localhost:3000](http://localhost:3000).
 | `npm run dev` | Development server dengan hot reload |
 | `npm run build` | Build produksi |
 | `npm start` | Jalankan hasil build produksi |
-| `npm test` | Jalankan seluruh unit test (45 test) |
+| `npm test` | Jalankan seluruh unit test (84 test) |
 | `npm run test:watch` | Test dalam mode watch |
 | `npm run lint` | Periksa kualitas kode dengan ESLint |
 | `npm run demo:numbers` | Generate tabel angka demo dari engine |
@@ -351,7 +364,7 @@ Perhatikan skenario ketiga: totalnya **lebih mahal** karena enam fasilitas akses
 npm test
 ```
 
-45 unit test menutupi keempat dimensi engine, normalisasi skor, validasi input, peringkat rekomendasi, dan satu test regresi khusus untuk formula inklusi.
+84 unit test menutupi keempat dimensi engine, normalisasi skor, validasi input, peringkat rekomendasi, prompt AI Insight, validasi body request endpoint, rate limiter, dan satu test regresi khusus untuk formula inklusi.
 
 Contoh yang diuji:
 
@@ -361,6 +374,8 @@ Contoh yang diuji:
 - Skor inklusi membedakan 2 tamu difabel dari 200 tamu difabel walaupun sama-sama tanpa fasilitas — perilaku yang gagal pada formula perkalian versi awal.
 - `clampParams()` menangani nilai di luar rentang dan `NaN`.
 - Rekomendasi tidak pernah mengusulkan mencabut fasilitas akses yang sudah ada, dan tidak pernah mengusulkan nilai yang sedang dipakai.
+- Endpoint `/api/insight` menolak enum di luar daftar, duplikat fasilitas, `NaN`, `null`, angka berbentuk string, dan membuang field asing dari body.
+- Rate limiter memakai jendela geser (bukan jendela tetap) dan tidak membiarkan peta identitas tumbuh tanpa batas.
 
 ---
 
