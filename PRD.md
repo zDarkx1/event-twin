@@ -196,7 +196,7 @@ Contoh: `?p=1200&fp=reusable&dv=refillStation&lt=led&ac=ramp,largePrint`
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Perintah: `npm test` (45 test), `npm run demo:numbers` (regenerasi angka dokumen), `npm run build`, `npm run dev`.
+Perintah: `npm test` (104 test), `npm run demo:numbers` (regenerasi angka dokumen), `npm run build`, `npm run dev`.
 
 **Keputusan teknis dan alasannya (untuk Tanya Jawab juri).**
 
