@@ -174,8 +174,6 @@ export function ScenarioSimulator() {
             key={JSON.stringify(scenario) + JSON.stringify(baseline)}
             scenario={scenario}
             baseline={baseline}
-            scenarioResult={scenarioResult}
-            baselineResult={baselineResult}
           />
 
           <Card>
