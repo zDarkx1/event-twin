@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# dokumen lomba — referensi lokal, bukan bagian karya yang dinilai
+*.pdf
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

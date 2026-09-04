@@ -42,7 +42,7 @@ EventTwin adalah *digital twin* kegiatan: pengguna mensimulasikan sebuah acara s
 ### 2.2 Tidak termasuk (non-goals)
 
 - **Autentikasi & akun pengguna.** Tidak ada login. Killer feature tidak membutuhkannya.
-- **Database.** State di React; persistensi lewat URL query + localStorage. Menambah Postgres untuk menyimpan tiga baris adalah keputusan teknis yang lemah, dan justru bisa dipertahankan di Q&A sebagai efisiensi teknologi.
+- **Database.** State di React; skenario dibagikan lewat URL query (F8), bukan disimpan di server. Menambah Postgres untuk menyimpan tiga baris adalah keputusan teknis yang lemah, dan justru bisa dipertahankan di Q&A sebagai efisiensi teknologi. Tidak ada `localStorage` juga: satu-satunya persistensi adalah tautan, sehingga tidak ada state tersembunyi yang bisa membuat dua orang melihat angka berbeda dari tautan yang sama.
 - **Backend terpisah (Go/Docker).** Engine adalah perhitungan murni — API route Next.js cukup, dan tanpa network round-trip what-if justru lebih cepat.
 - **Pencatatan sampah aktual pasca-acara.** Ini aplikasi keputusan pra-acara, bukan pelaporan.
 - **Multi-bahasa.** Bahasa Indonesia saja.
@@ -149,7 +149,7 @@ Momen demo: satu perubahan → empat angka bergerak serentak.
 
 Engine menghitung ulang untuk setiap perubahan tunggal yang mungkin (ganti kemasan, ganti lampu, tambah ramp, dst.), lalu mengurutkan berdasarkan pengurangan dampak per rupiah. Menampilkan tiga teratas dengan angka konkret.
 
-Contoh keluaran nyata dari engine (baseline 500 peserta, 6 jam): *"Ganti botol plastik → refill station: −15,0 kg timbulan, −Rp 3.109.660."* dan *"Tambah materi huruf besar: +6,8 poin inklusi, Rp 150.000"* — 45 poin inklusi per juta rupiah, empat kali lebih efisien daripada ramp (11 poin per juta).
+Contoh keluaran nyata dari engine (baseline 500 peserta, 6 jam): *"Ganti botol plastik → refill station: −15,0 kg timbulan, −Rp 2.299.660."* dan *"Tambah materi huruf besar: +6,8 poin inklusi, Rp 150.000"* — 45 poin inklusi per juta rupiah, empat kali lebih efisien daripada ramp (11 poin per juta).
 
 ### 4.5 AI Insight (F7)
 
@@ -273,14 +273,14 @@ Babak final: Live Demo 25% + Presentasi 25% → skenario demo di `AGENTS.md` §D
 | 1 Sep | Scaffold, `coefficients.ts` | ✅ selesai |
 | 2 Sep | `engine.ts` + 32 test, kalibrasi koefisien ke sumber primer, regenerasi angka dokumen | ✅ selesai |
 | 2 Sep | `recommend.ts` + 13 test, F1 form, F4 dashboard, F3 simulator, F5 perbandingan, F9 responsif | ✅ selesai |
-| 3 Sep | Validasi build (`tsc`, `vitest`, `lint`, `next build`), uji visual 360–1920 px | ⬜ |
-| 4 Sep | AI insight, share URL, **deploy Vercel** | ⬜ |
-| 5 Sep | README sesuai template, uji lintas perangkat, perbaikan | ⬜ |
+| 3 Sep | Validasi build (`tsc`, `vitest`, `lint`, `next build`), F7 AI Insight + pengerasan endpoint, F8 share URL, kalibrasi harga konsumsi | ✅ selesai |
+| 4 Sep | **Deploy Vercel**, repo dijadikan publik, tautan demo masuk README | ⬜ |
+| 5 Sep | Uji lintas perangkat, uji happy path AI dari jaringan tanpa blokir, perbaikan | ⬜ |
 | 6 Sep | Cadangan + kumpulkan (batas 23.59 WIB) | ⬜ |
 
 Deploy dijadwalkan H-2, bukan hari terakhir. Masalah hosting yang muncul di hari terakhir tidak punya ruang perbaikan.
 
-**Catatan jujur soal jadwal.** Rencana awal menargetkan form input dan empat kartu dampak selesai 2 Sep. Yang selesai 2–3 Sep: engine, kalibrasi koefisien, F1–F9 lengkap. Seluruhnya divalidasi — `tsc`, `vitest` (104 test), `lint`, dan `next build` berjalan bersih. Sisa yang belum: **deploy Vercel**, kalibrasi harga katering ke harga lokal, dan verifikasi happy path AI Insight (endpoint yang dipakai saat ini diblokir Cloudflare dari IP datacenter, jadi respons sungguhan belum pernah diuji).
+**Catatan jujur soal jadwal.** Rencana awal menargetkan form input dan empat kartu dampak selesai 2 Sep. Yang selesai 2–3 Sep: engine, kalibrasi koefisien, F1–F9 lengkap. Seluruhnya divalidasi — `tsc`, `vitest` (104 test), `lint`, dan `next build` berjalan bersih. Sisa yang belum: **deploy Vercel** dan verifikasi happy path AI Insight terhadap endpoint nyata (endpoint yang dipakai saat ini diblokir Cloudflare dari IP datacenter; jalur sukses sudah diuji terhadap gateway tiruan lokal, jalur gagalnya diuji lengkap).
 
 ---
 

@@ -45,8 +45,25 @@ export const ENERGY = {
 } as const;
 
 export const COST = {
-  mealPerPortion: { disposable: 15000, mixed: 14500, reusable: 14000 },
-  drinkPerPortion: { plasticBottle: 4000, mixed: 2450, refillStation: 900 },
+  /**
+   * Rp/porsi. TERVERIFIKASI ke daftar harga katering Jabodetabek terbitan,
+   * September 2026 (rincian COEFFICIENTS.md §3.1).
+   * - disposable: nasi box paket ekonomis, rentang terbit Rp 19.000-23.000.
+   * - reusable: prasmanan tier terendah Rp 20.000, yang sudah TERMASUK
+   *   peralatan makan, meja, dan waiters — karena itu wajar lebih murah dari
+   *   nasi box: katering tidak membeli kotak sekali pakai.
+   */
+  mealPerPortion: { disposable: 21000, mixed: 20500, reusable: 20000 },
+  /**
+   * Rp/porsi (satu porsi = satu botol 600 ml, atau satu cup ~250 ml dari
+   * refill station). Rincian dan sumber di COEFFICIENTS.md §3.1.
+   * - plasticBottle: harga karton 24 x 600 ml, bukan ritel satuan — acara
+   *   500 orang membeli per karton.
+   * - refillStation: air isi ulang Rp 1.000/liter x 0,25 L = Rp 250, plus cup
+   *   PP Rp 180 dibagi ~3 kali pakai = Rp 60. Hanya bahan habis pakai; sewa
+   *   dispenser belum dimodelkan.
+   */
+  drinkPerPortion: { plasticBottle: 2600, mixed: 1455, refillStation: 310 },
   /**
    * Rp/kWh. pln: TERVERIFIKASI — golongan B-2/TR (bisnis tegangan rendah,
    * 6.600 VA-200 kVA), Permen ESDM No. 7/2024 Lampiran III, berlaku

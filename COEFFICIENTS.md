@@ -12,7 +12,7 @@ Status yang dipakai:
 | `TERVERIFIKASI` | Sudah dicek ke sumber primer; tanggal dan tautan dicatat. |
 | `ASUMSI MODEL` | Tidak ada sumber publik; nilai adalah keputusan desain kami, dengan alasan tertulis. Sampaikan sebagai asumsi, bukan sebagai data. |
 
-**Verifikasi terakhir: 2 September 2026.** Empat koefisien prioritas (faktor emisi PLN, tarif PLN, timbulan SIPSN, berat kemasan) sudah dicek ke sumber primer pada tanggal ini. Harga konsumsi dan biaya fasilitas masih `ASUMSI MODEL` dan perlu dikalibrasi ke harga lokal.
+**Verifikasi terakhir: 3 September 2026.** Empat koefisien prioritas (faktor emisi PLN, tarif PLN, timbulan SIPSN, berat kemasan) dicek ke sumber primer 2 September. **Harga konsumsi — pos biaya terbesar, 98,9% biaya operasional baseline — dikalibrasi ke daftar harga katering terbitan pada 3 September (§3.1).** Yang masih `ASUMSI MODEL`: biaya fasilitas akses, watt pencahayaan, tarif genset, retribusi angkut, dan rubrik bobot inklusi.
 
 ---
 
@@ -164,15 +164,46 @@ Jumlah sembilan komponen = 100,95% (portal tidak menormalisasi). Tren: sisa maka
 
 | Konstanta | Nilai | Satuan | Status | Catatan |
 |---|---:|---|---|---|
-| `COST.mealPerPortion.disposable` | 15.000 | Rp/porsi | `ASUMSI MODEL` | Harga katering sekolah; **kalibrasi ke harga lokal** |
-| `COST.mealPerPortion.reusable` | 14.000 | Rp/porsi | `ASUMSI MODEL` | Lebih murah per porsi, ada investasi awal |
-| `COST.mealPerPortion.mixed` | 14.500 | Rp/porsi | `ASUMSI MODEL` | Titik tengah |
-| `COST.drinkPerPortion.plasticBottle` | 4.000 | Rp/porsi | `ASUMSI MODEL` | Botol air mineral 600 ml |
-| `COST.drinkPerPortion.refillStation` | 900 | Rp/porsi | `ASUMSI MODEL` | Air isi ulang + cup |
-| `COST.drinkPerPortion.mixed` | 2.450 | Rp/porsi | `ASUMSI MODEL` | Titik tengah |
+| `COST.mealPerPortion.disposable` | 21.000 | Rp/porsi | `TERVERIFIKASI` | Nasi box paket ekonomis Jabodetabek; titik tengah rentang terbit Rp 19.000–23.000 |
+| `COST.mealPerPortion.reusable` | 20.000 | Rp/porsi | `TERVERIFIKASI` | Prasmanan tier terendah — sudah termasuk peralatan makan, meja, waiters |
+| `COST.mealPerPortion.mixed` | 20.500 | Rp/porsi | `ASUMSI MODEL` | Titik tengah dua nilai di atas |
+| `COST.drinkPerPortion.plasticBottle` | 2.600 | Rp/porsi | `TERVERIFIKASI` | Karton 24 × 600 ml, median 12 penawaran Rp 63.250 ÷ 24 = Rp 2.635 |
+| `COST.drinkPerPortion.refillStation` | 310 | Rp/porsi | `TERVERIFIKASI` (turunan) | Air isi ulang Rp 1.000/L × 0,25 L + cup PP Rp 180 ÷ 3 pakai |
+| `COST.drinkPerPortion.mixed` | 1.455 | Rp/porsi | `ASUMSI MODEL` | Titik tengah dua nilai di atas |
 | `COST.tariffPerKwh.pln` | 1.444,70 | Rp/kWh | `TERVERIFIKASI` | B-2/TR, Permen ESDM No. 7/2024 Lampiran III |
 | `COST.tariffPerKwh.generator` | 3.200 | Rp/kWh | `ASUMSI MODEL` | Konsumsi diesel + sewa genset |
 | `COST.wasteHaulingPerKg` | 700 | Rp/kg | `ASUMSI MODEL` | Retribusi angkut; sangat bervariasi antardaerah |
+
+### 3.1 Harga konsumsi — kalibrasi 3 September 2026
+
+Ini pos biaya terbesar: **98,9% biaya operasional baseline**. Sebelumnya seluruhnya `ASUMSI MODEL`; sekarang dikalibrasi ke daftar harga terbitan.
+
+**Makanan.** Dua jenis layanan yang berbeda, bukan satu harga dinaik-turunkan:
+
+| Layanan | Harga terbit | Dipakai untuk |
+|---|---:|---|
+| Nasi box paket ekonomis | Rp 19.000–23.000/porsi | `disposable` → 21.000 (titik tengah) |
+| Prasmanan tier terendah | Rp 20.000/pax | `reusable` → 20.000 |
+
+- Nasi box: Rumah Tumpeng Jakarta menyebut "mulai Rp 19.000 per porsi" dan "paket ekonomis Rp 19.000–23.000"; cateringprasmanan.com menampilkan Rp 23.000/25.000/28.000 untuk menu nasi box.
+  https://rumahtumpengjakarta.com/nasi-kotak2/ · https://www.cateringprasmanan.com/menu-nasi-box/
+- Prasmanan: cateringprasmanan.com dan spyneter.com sama-sama membuka daftar pada **Rp 20.000/pax**, dengan keterangan "sudah meliputi biaya peralatan, tenaga waiters".
+  https://www.cateringprasmanan.com/menu-prasmanan/ · https://www.spyneter.com/menu-prasmanan/
+
+**Kenapa `reusable` lebih murah daripada `disposable`, bukan sebaliknya.** Ini pertanyaan yang paling mungkin diajukan juri. Pada prasmanan, katering tidak membeli kotak dan sendok sekali pakai untuk 500 porsi — peralatan makan sudah termasuk dalam harga pax dan dipakai berulang. Selisihnya kecil (Rp 1.000/porsi) dan model tetap mencatat **investasi awal reusable terpisah** (§3.2), jadi penghematannya tidak dilebih-lebihkan.
+
+**Minuman.** Satu porsi = satu botol 600 ml, atau satu cup ±250 ml dari refill station.
+
+- Botol: harga **karton 24 × 600 ml**, bukan ritel satuan — acara 500 orang membeli per karton. Median 12 penawaran pasar (Rp 44.000–87.344) = **Rp 63.250/karton** → Rp 2.635/botol, dibulatkan **2.600**. Harga ritel satuan Aqua 600 ml Rp 3.000–3.800 (Klik Indomaret, Alfagift) dipakai sebagai batas atas, bukan sebagai nilai model.
+- Refill: situs Aqua menyebut isi ulang galon 19 L ≈ **Rp 1.000/liter**; 0,25 L = Rp 250. Cup PP 220 ml Rp 9.000/50 pcs = Rp 180/cup, dibagi ~3 kali pakai = Rp 60. Total **Rp 310**.
+  https://www.liputan6.com/bisnis/read/8280754/daftar-harga-galon-air-minum-terbaru-2026-dari-merek-nasional-sampai-lokal
+
+**Yang belum dimodelkan, dan harus disebut kalau ditanya:** sewa dispenser refill station, ongkos kirim katering, dan PPN. Ketiganya menambah biaya absolut tapi tidak mengubah arah perbandingan antarskenario.
+
+**Batas geografis.** Seluruh harga di atas pasar **Jabodetabek**. Di kota lain harganya berbeda; kalau acaranya di luar Jabodetabek, ganti angkanya dan katakan bahwa angka bawaan model adalah harga Jabodetabek.
+
+
+### 3.2 Tarif listrik
 
 **Tarif PLN — terverifikasi dan masih berlaku.** Rp 1.444,70/kWh terbaca langsung di Permen ESDM No. 7 Tahun 2024 Lampiran III: golongan **B-2/TR** (Bisnis, Tegangan Rendah, 6.600 VA s.d. 200 kVA), reguler dan prabayar sama. Status berlaku dikonfirmasi Siaran Pers ESDM No. 038.Pers/04/SJI/2026 (30 Juni 2026): tarif tidak naik untuk Triwulan III 2026.
 
@@ -194,6 +225,8 @@ Kalau acaranya di sekolah dengan sambungan sosial, tarif yang benar Rp 900/kWh �
 
 **Kalimat kutipan yang disarankan:** *"Tarif listrik B-2/TR (bisnis, 6.600 VA–200 kVA) Rp 1.444,70/kWh, berlaku Triwulan III 2026 — Permen ESDM No. 7/2024 Lampiran III."*
 
+### 3.3 Investasi awal reusable
+
 **Investasi awal reusable** (dicatat terpisah, tidak dicampur ke biaya operasional):
 
 | Item | Nilai | Satuan | Status |
@@ -203,7 +236,7 @@ Kalau acaranya di sekolah dengan sambungan sosial, tarif yang benar Rp 900/kWh �
 
 Biaya teramortisasi = `capex / reusableExpectedUses`, tersedia sebagai `cost.reusableAmortizedRp`. Menyembunyikan investasi awal membuat reusable tampak gratis — itu tidak jujur dan akan ditanyakan.
 
-**Harga adalah variabel paling lokal di model ini.** Sebelum pitching, sesuaikan ke harga di kota kalian dan catat kotanya di sini. Harga yang jelas tidak masuk akal untuk daerah juri adalah target pertanyaan yang mudah.
+**Harga adalah variabel paling lokal di model ini.** Angka §3.1 adalah harga Jabodetabek per 3 September 2026. Sebelum pitching, sesuaikan ke harga di kota kalian dan catat kotanya di sini. Harga yang jelas tidak masuk akal untuk daerah juri adalah target pertanyaan yang mudah.
 
 ---
 
@@ -296,4 +329,4 @@ Status: `ASUMSI MODEL`. Bobot ini adalah pilihan desain. Yang perlu dipertahanka
 2. **Setiap angka punya baris di dokumen ini** dengan status dan alasan.
 3. **Asumsi disebut asumsi.** Menyebut sumber yang belum dicek jauh lebih merusak daripada mengakui asumsi dengan alasan yang jelas.
 4. **Angka demo digenerate, tidak ditulis manual.** Jalankan `npm run demo:numbers` untuk menghasilkan tabel dari engine. Setiap perubahan koefisien wajib diikuti regenerasi tabel di `AGENTS.md` dan `PRD.md` — inilah yang mencegah dokumen dan aplikasi menampilkan angka berbeda saat live demo.
-5. **Sisa yang masih `PERLU VERIFIKASI` / `ASUMSI MODEL`:** harga katering dan minuman, tarif genset, retribusi angkut sampah, faktor emisi genset, watt pencahayaan per orang, faktor pemilahan, biaya fasilitas akses, seluruh rubrik inklusi. Prioritas berikutnya: harga konsumsi (paling besar pengaruhnya ke total biaya — 98,8% dari biaya operasional baseline) dan watt pencahayaan.
+5. **Sisa yang masih `ASUMSI MODEL`:** tarif genset, retribusi angkut sampah, faktor emisi genset, watt pencahayaan per orang, faktor pemilahan, biaya fasilitas akses, seluruh rubrik inklusi. Prioritas berikutnya: **watt pencahayaan per orang** (menentukan seluruh dimensi energi) dan **biaya fasilitas akses** (menentukan besar trade-off inklusi). Harga konsumsi sudah dikalibrasi 3 Sep 2026 — lihat §3.1; itu 98,9% biaya operasional baseline.

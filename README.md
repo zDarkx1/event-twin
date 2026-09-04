@@ -85,7 +85,7 @@ Konsekuensinya: acara dengan 200 tamu difabel dan tanpa ramp mendapat skor lebih
 
 Engine menghitung ulang setiap perubahan tunggal yang mungkin, lalu mengurutkan berdasarkan **dampak per rupiah**. Contoh hasil nyata untuk acara 500 peserta:
 
-- Ganti botol plastik → refill station: **−15,0 kg** timbulan, **−Rp 3.109.660**
+- Ganti botol plastik → refill station: **−15,0 kg** timbulan, **−Rp 2.299.660**
 - Tambah materi huruf besar: **+6,8 poin** inklusi dengan **Rp 150.000** — 45 poin per juta rupiah, empat kali lebih efisien daripada ramp (11 poin per juta)
 
 Temuan seperti ini tidak terlihat tanpa model.
@@ -129,7 +129,7 @@ Tiga hal yang dinyatakan apa adanya, bukan disembunyikan:
 2. Tarif Rp 1.444,70 adalah golongan **B-2/TR (bisnis)**. Venue sekolah dengan sambungan sosial S-2/TR tarifnya Rp 900/kWh.
 3. Angka sisa makanan berasal dari **sektor jasa makanan UK**, bukan data Indonesia — tidak ada angka kg-per-porsi nasional yang bisa dikutip.
 
-Koefisien yang **masih asumsi model** (harga katering, tarif genset, retribusi angkut, watt pencahayaan, bobot rubrik inklusi) ditandai eksplisit sebagai asumsi di `COEFFICIENTS.md`. Menyebut sumber yang belum dicek lebih merusak daripada mengakui asumsi dengan alasan yang jelas.
+Koefisien yang **masih asumsi model** (tarif genset, retribusi angkut, watt pencahayaan, biaya fasilitas akses, bobot rubrik inklusi) ditandai eksplisit sebagai asumsi di `COEFFICIENTS.md`. Harga katering dan minuman sudah dikalibrasi ke daftar harga terbitan Jabodetabek per 3 September 2026. Menyebut sumber yang belum dicek lebih merusak daripada mengakui asumsi dengan alasan yang jelas.
 
 **Angka demo digenerate dari engine**, bukan ditulis manual:
 
@@ -151,8 +151,11 @@ Ini yang mencegah dokumen dan aplikasi menampilkan angka berbeda saat live demo.
 | [Tailwind CSS](https://tailwindcss.com) | 4.x | Styling utility-first, mobile-first responsif |
 | [Vitest](https://vitest.dev) | 3.2.4 | Unit test engine, rekomendasi, prompt AI, validasi request, rate limit, share URL (104 test) |
 | [ESLint](https://eslint.org) | 9.x | Linting dengan `eslint-config-next` |
+| [Radix UI](https://www.radix-ui.com) | 1.x | Primitif komponen aksesibel (slider, select, checkbox, tabs) |
 
 > AI Insight memanggil endpoint `/v1/chat/completions` lewat `fetch` bawaan — tanpa SDK, tanpa dependency runtime tambahan.
+>
+> Grafik komposisi sampah memakai **flexbox murni**, tanpa chart library: satu batang part-to-whole hanyalah pembagian lebar proporsional, dan `flex-grow` melakukannya persis di setiap lebar layar tanpa JavaScript saat resize.
 
 ### Keputusan teknis dan alasannya
 
@@ -364,9 +367,9 @@ Festival sekolah, 500 peserta, 6 jam — angka digenerate `npm run demo:numbers`
 
 | Skenario | Timbulan | Residu ke TPA | Energi | Emisi | Biaya operasional | Inklusi | Sustainability |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Disposable | 99,5 kg | 91,5 kg | 54,0 kWh | 47,0 kg CO₂ | Rp 11.642.092 | 32 / 100 | 15 / 100 |
-| Reusable | 75,5 kg | 69,5 kg | 54,0 kWh | 47,0 kg CO₂ | Rp 8.026.636 | 32 / 100 | 47 / 100 |
-| Reusable + akses & energi efisien | 75,5 kg | 55,9 kg | 30,0 kWh | 26,1 kg CO₂ | Rp 13.932.450 | 100 / 100 | 96 / 100 |
+| Disposable | 99,5 kg | 91,5 kg | 54,0 kWh | 47,0 kg CO₂ | Rp 13.242.092 | 32 / 100 | 15 / 100 |
+| Reusable | 75,5 kg | 69,5 kg | 54,0 kWh | 47,0 kg CO₂ | Rp 10.436.636 | 32 / 100 | 47 / 100 |
+| Reusable + akses & energi efisien | 75,5 kg | 55,9 kg | 30,0 kWh | 26,1 kg CO₂ | Rp 16.342.450 | 100 / 100 | 96 / 100 |
 
 Perhatikan skenario ketiga: totalnya **lebih mahal** karena enam fasilitas aksesibilitas menambah Rp 5,95 juta, meski konsumsi dan energi turun. Itu memang temuan modelnya — inklusi tidak gratis, dan panitia perlu melihat trade-off itu secara eksplisit.
 

@@ -6,10 +6,27 @@ import { RATE_LIMIT_DEFAULTS, checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
+/**
+ * Batas waktu eksekusi function di platform. Dinyatakan eksplisit supaya tidak
+ * bergantung pada default plan (yang bisa berubah): timeout fetch ke upstream
+ * 90 detik butuh ruang lebih besar dari itu, tapi tetap di bawah batas plan
+ * gratis. Kalau AI_TIMEOUT_MS dinaikkan melewati angka ini, platform yang akan
+ * memutus lebih dulu — dan klien menerima 504, bukan JSON error kita.
+ */
+export const maxDuration = 120;
+
 /** Batas ukuran body — payload sah jauh di bawah 8 KB. */
 const MAX_BODY_BYTES = 16_384;
 
 const DEFAULT_MODEL = "claude-opus-5";
+
+/**
+ * Batas panjang keluaran. Prompt meminta 120-180 kata (~350 token), jadi 968
+ * memberi ruang aman tanpa membiarkan biaya tak terbatas. Sebagian gateway
+ * OpenAI-compatible juga punya default sangat kecil yang memotong narasi di
+ * tengah kalimat — menyatakannya eksplisit menghindari keduanya.
+ */
+const MAX_OUTPUT_TOKENS = 968;
 
 /**
  * Identitas pemanggil untuk rate limiting. Di belakang proxy Vercel, IP asli
@@ -111,6 +128,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         model: process.env.ANTHROPIC_MODEL || DEFAULT_MODEL,
         temperature: 0.2,
+        max_tokens: MAX_OUTPUT_TOKENS,
         // System prompt jadi pesan pertama — begitu skema chat completions
         // membawanya; tidak ada field `system` terpisah.
         messages: [
