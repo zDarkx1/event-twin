@@ -1,6 +1,4 @@
 import { ScenarioSimulator } from "@/components/scenario-simulator";
-<<<<<<< HEAD
-=======
 import { decodeShareParams } from "@/lib/share-url";
 
 /**
@@ -22,7 +20,6 @@ export default async function Home({
     else if (Array.isArray(value) && value.length > 0) qs.set(key, value[value.length - 1]);
   }
   const decoded = decodeShareParams(qs);
->>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 
   return (
     <div className="flex-1 bg-background">
@@ -44,13 +41,9 @@ export default async function Home({
           </p>
         </header>
 
-<<<<<<< HEAD
-        <ScenarioSimulator />
-=======
         <ScenarioSimulator
           initial={{ scenario: decoded.scenario, baseline: decoded.baseline }}
         />
->>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 
         <footer className="pt-2 text-xs text-muted-foreground">
           Seluruh koefisien perhitungan bersumber dan terdokumentasi di{" "}

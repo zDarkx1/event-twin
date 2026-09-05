@@ -15,6 +15,9 @@ import type { EventParams, SimulationResult } from "@/lib/engine";
 import { recommend } from "@/lib/recommend";
 import { DEFAULT_PARAMS } from "@/lib/defaults";
 import { decimal, round, rupiahCompact } from "@/lib/format";
+import { useReveal } from "@/lib/use-reveal";
+import { cn } from "@/lib/utils";
+import { AnimatedNumber } from "@/components/animated-number";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,18 +26,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-<<<<<<< HEAD
-=======
 import { AiInsight } from "@/components/ai-insight";
->>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 import { EventForm } from "@/components/event-form";
 import { ImpactDashboard } from "@/components/impact-dashboard";
 import { RecommendationList } from "@/components/recommendation-list";
 import { ScenarioComparison } from "@/components/scenario-comparison";
-<<<<<<< HEAD
-=======
 import { ShareLink } from "@/components/share-link";
->>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 
 /**
  * Strip ringkas yang menempel di atas layar sempit.
@@ -50,22 +47,30 @@ function StickySummary({ result }: { result: SimulationResult }) {
     {
       id: "waste",
       color: "var(--chart-1)",
-      text: `${decimal(result.waste.generatedKg)} kg`,
+      rawValue: result.waste.generatedKg,
+      format: decimal,
+      suffix: "kg",
     },
     {
       id: "energy",
       color: "var(--chart-2)",
-      text: `${decimal(result.energy.kwh)} kWh`,
+      rawValue: result.energy.kwh,
+      format: decimal,
+      suffix: "kWh",
     },
     {
       id: "cost",
       color: "var(--chart-3)",
-      text: rupiahCompact(result.cost.totalRp),
+      rawValue: result.cost.totalRp,
+      format: rupiahCompact,
+      suffix: "",
     },
     {
       id: "inclusion",
       color: "var(--chart-4)",
-      text: `${round(result.inclusion.score)}/100`,
+      rawValue: result.inclusion.score,
+      format: round,
+      suffix: "/ 100",
     },
   ];
 
@@ -77,23 +82,22 @@ function StickySummary({ result }: { result: SimulationResult }) {
       {items.map((item) => (
         <span
           key={item.id}
-          className="flex items-center gap-1 text-[11px] font-medium tabular-nums sm:text-xs"
+          className="flex items-center gap-1 text-[0.6875rem] font-medium tabular-nums sm:text-xs"
         >
           <span
             className="size-1.5 shrink-0 rounded-full"
             style={{ background: item.color }}
           />
-          {item.text}
+          <span>
+            <AnimatedNumber value={item.rawValue} format={item.format} />
+            {item.suffix ? ` ${item.suffix}` : null}
+          </span>
         </span>
       ))}
     </div>
   );
 }
 
-<<<<<<< HEAD
-export function ScenarioSimulator() {
-  const [params, setParams] = useState<EventParams>(DEFAULT_PARAMS);
-=======
 interface ScenarioSimulatorProps {
   /**
    * Nilai awal simulator. Diselesaikan di Server Component dari `searchParams`
@@ -107,18 +111,13 @@ interface ScenarioSimulatorProps {
 
 export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
   const [params, setParams] = useState<EventParams>(initial.scenario);
->>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
   /**
    * Baseline dibekukan sebagai PARAMS, bukan sebagai hasil: ketika jumlah
    * peserta diubah, baseline harus ikut berskala supaya perbandingannya adil.
    * Yang dibekukan adalah KEPUTUSAN penyelenggaraan, bukan ukuran acaranya.
    */
   const [baselineDecisions, setBaselineDecisions] = useState<EventParams>(
-<<<<<<< HEAD
-    DEFAULT_PARAMS,
-=======
     initial.baseline,
->>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
   );
 
   const scenario = useMemo(() => clampParams(params), [params]);
@@ -143,6 +142,12 @@ export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
   const baselineResult = useMemo(() => simulate(baseline), [baseline]);
   const recommendations = useMemo(() => recommend(scenario), [scenario]);
 
+  // Reveal sekali saat scroll — kartu form di atas lipatan tidak ikut supaya
+  // kontrol killer feature terasa instan sejak paint pertama.
+  const { ref: aiRef, visible: aiVisible } = useReveal();
+  const { ref: recoRef, visible: recoVisible } = useReveal();
+  const { ref: compRef, visible: compVisible } = useReveal();
+
   const update = (patch: Partial<EventParams>) =>
     setParams((prev) => ({ ...prev, ...patch }));
 
@@ -160,7 +165,7 @@ export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
     <div>
       <StickySummary result={scenarioResult} />
 
-      <div className="grid gap-4 pt-4 lg:grid-cols-[22rem_1fr] lg:items-start lg:pt-0">
+      <div className="grid min-w-0 gap-4 pt-4 lg:grid-cols-[22rem_1fr] lg:items-start lg:pt-0">
         {/*
           Kolom form menempel saat di-scroll, tapi dibatasi tinggi viewport dan
           di-scroll sendiri: tanpa itu, di layar 1024×768 bagian bawah form
@@ -180,16 +185,10 @@ export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
             <CardContent>
               <EventForm params={params} onChange={update} />
             </CardContent>
-<<<<<<< HEAD
-            <CardContent className="border-t pt-4">
-              <Button
-                variant="outline"
-=======
             <CardContent className="grid gap-2 border-t pt-4">
               <ShareLink scenario={scenario} baseline={baseline} />
               <Button
                 variant="ghost"
->>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
                 size="sm"
                 onClick={reset}
                 className="w-full"
@@ -201,52 +200,57 @@ export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
           </Card>
         </div>
 
-<<<<<<< HEAD
-        <div className="grid gap-4">
-          <ImpactDashboard result={scenarioResult} baseline={baselineResult} />
-
-=======
         <div className="grid gap-6">
           <ImpactDashboard result={scenarioResult} baseline={baselineResult} />
 
-          <AiInsight
-            key={JSON.stringify(scenario) + JSON.stringify(baseline)}
-            scenario={scenario}
-            baseline={baseline}
-          />
+          <div
+            ref={aiRef}
+            className={cn("reveal min-w-0", aiVisible && "is-visible")}
+          >
+            <AiInsight scenario={scenario} baseline={baseline} />
+          </div>
 
->>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
-          <Card>
-            <CardHeader>
-              <CardTitle>Rekomendasi berdampak terbesar</CardTitle>
-              <CardDescription>
-                Satu langkah perubahan, diurutkan dari poin sustainability
-                tertinggi per rupiah.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RecommendationList
-                items={recommendations}
-                onApply={(next) => setParams(next)}
-              />
-            </CardContent>
-          </Card>
+          <div
+            ref={recoRef}
+            className={cn("reveal min-w-0", recoVisible && "is-visible")}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Rekomendasi berdampak terbesar</CardTitle>
+                <CardDescription>
+                  Satu langkah perubahan, diurutkan dari poin sustainability
+                  tertinggi per rupiah.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RecommendationList
+                  items={recommendations}
+                  onApply={(next) => setParams(next)}
+                />
+              </CardContent>
+            </Card>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Baseline vs skenario</CardTitle>
-              <CardDescription>
-                Baseline adalah keputusan awal acara pada ukuran peserta yang
-                sama.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScenarioComparison
-                baseline={baselineResult}
-                scenario={scenarioResult}
-              />
-            </CardContent>
-          </Card>
+          <div
+            ref={compRef}
+            className={cn("reveal min-w-0", compVisible && "is-visible")}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Baseline vs skenario</CardTitle>
+                <CardDescription>
+                  Baseline adalah keputusan awal acara pada ukuran peserta yang
+                  sama.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScenarioComparison
+                  baseline={baselineResult}
+                  scenario={scenarioResult}
+                />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

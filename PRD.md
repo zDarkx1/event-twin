@@ -177,20 +177,6 @@ Contoh: `?p=1200&fp=reusable&dv=refillStation&lt=led&ac=ramp,largePrint`
 ┌─────────────────────────────────────────────────────────────┐
 │  Next.js 16 (App Router, TypeScript, Tailwind v4)           │
 │                                                              │
-<<<<<<< HEAD
-│  ✅ src/lib/coefficients.ts    ← konstanta bersumber        │
-│  ✅ src/lib/engine.ts          ← fungsi murni, deterministik │
-│  ✅ src/lib/engine.test.ts     ← 32 test Vitest             │
-│  ✅ scripts/demo-numbers.ts    ← generator angka demo       │
-│  ✅ src/lib/recommend.ts       ← urutkan dampak per rupiah  │
-│  ✅ src/lib/recommend.test.ts  ← 13 test Vitest             │
-│  ✅ src/app/page.tsx           ← simulator + dashboard      │
-│  ⬜ src/app/api/insight/route.ts ← Claude (server-side)     │
-└─────────────────────────────────────────────────────────────┘
-```
-
-Perintah: `npm test` (45 test), `npm run demo:numbers` (regenerasi angka dokumen), `npm run build`, `npm run dev`.
-=======
 │  ✅ src/lib/coefficients.ts        ← konstanta bersumber     │
 │  ✅ src/lib/engine.ts              ← fungsi murni            │
 │  ✅ src/lib/engine.test.ts         ← 32 test                 │
@@ -211,7 +197,6 @@ Perintah: `npm test` (45 test), `npm run demo:numbers` (regenerasi angka dokumen
 ```
 
 Perintah: `npm test` (104 test), `npm run demo:numbers` (regenerasi angka dokumen), `npm run build`, `npm run dev`.
->>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 
 **Keputusan teknis dan alasannya (untuk Tanya Jawab juri).**
 
@@ -288,24 +273,14 @@ Babak final: Live Demo 25% + Presentasi 25% → skenario demo di `AGENTS.md` §D
 | 1 Sep | Scaffold, `coefficients.ts` | ✅ selesai |
 | 2 Sep | `engine.ts` + 32 test, kalibrasi koefisien ke sumber primer, regenerasi angka dokumen | ✅ selesai |
 | 2 Sep | `recommend.ts` + 13 test, F1 form, F4 dashboard, F3 simulator, F5 perbandingan, F9 responsif | ✅ selesai |
-<<<<<<< HEAD
-| 3 Sep | Validasi build (`tsc`, `vitest`, `lint`, `next build`), uji visual 360–1920 px | ⬜ |
-| 4 Sep | AI insight, share URL, **deploy Vercel** | ⬜ |
-| 5 Sep | README sesuai template, uji lintas perangkat, perbaikan | ⬜ |
-=======
 | 3 Sep | Validasi build (`tsc`, `vitest`, `lint`, `next build`), F7 AI Insight + pengerasan endpoint, F8 share URL, kalibrasi harga konsumsi | ✅ selesai |
 | 4 Sep | **Deploy Vercel**, repo dijadikan publik, tautan demo masuk README | ⬜ |
 | 5 Sep | Uji lintas perangkat, uji happy path AI dari jaringan tanpa blokir, perbaikan | ⬜ |
->>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 | 6 Sep | Cadangan + kumpulkan (batas 23.59 WIB) | ⬜ |
 
 Deploy dijadwalkan H-2, bukan hari terakhir. Masalah hosting yang muncul di hari terakhir tidak punya ruang perbaikan.
 
-<<<<<<< HEAD
-**Catatan jujur soal jadwal.** Rencana awal menargetkan form input dan empat kartu dampak selesai 2 Sep. Yang selesai 2 Sep justru lebih banyak: engine, test, kalibrasi koefisien, dan seluruh F1–F6 + F9. Yang belum dikerjakan adalah **validasinya** — `tsc`, `vitest`, `lint`, dan `next build` belum berhasil dijalankan sekali pun sejak UI ditulis, jadi kode UI di atas masih berstatus belum terkompilasi. Itu pekerjaan pertama 3 Sep, sebelum fitur baru apa pun. F7 (AI insight) dan F8 (share URL) tetap yang pertama dilepas kalau waktu habis.
-=======
 **Catatan jujur soal jadwal.** Rencana awal menargetkan form input dan empat kartu dampak selesai 2 Sep. Yang selesai 2–3 Sep: engine, kalibrasi koefisien, F1–F9 lengkap. Seluruhnya divalidasi — `tsc`, `vitest` (104 test), `lint`, dan `next build` berjalan bersih. Sisa yang belum: **deploy Vercel** dan verifikasi happy path AI Insight terhadap endpoint nyata (endpoint yang dipakai saat ini diblokir Cloudflare dari IP datacenter; jalur sukses sudah diuji terhadap gateway tiruan lokal, jalur gagalnya diuji lengkap).
->>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 
 ---
 

@@ -84,6 +84,9 @@
   --chart-4: #eda100;
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
+  /* Satu keluarga kurva untuk seluruh animasi — cermin JS-nya di easing.ts.
+     Ease-out kuat: mulai ligat (terasa responsif), mendarat mulus. */
+  --ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -139,5 +142,137 @@
   }
   html {
     @apply font-sans;
+    /* Perbesaran seragam: seluruh utilitas Tailwind berbasis rem, jadi
+       menaikkan root font-size memperbesar tipografi + sizing dengan rasio
+       yang persis sama — tanpa mengubah layout, warna, atau komponen. */
+    font-size: 112.5%; /* 16px → 18px: mobile + tablet */
+  }
+  @media (min-width: 1024px) {
+    html {
+      font-size: 125%; /* 16px → 20px: desktop punya ruang lebih */
+    }
+  }
+}
+
+@layer components {
+  /*
+   * Reveal saat scroll — sekali saja (observer melepas diri). Elemen sudah di
+   * posisi akhir saat SSR; tanpa JS aplikasi memang tidak berfungsi (seluruh
+   * simulator client-side), jadi tidak ada fallback no-JS khusus.
+   */
+  .reveal {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    filter: blur(6px);
+    transition:
+      opacity 550ms var(--ease-reveal),
+      transform 550ms var(--ease-reveal),
+      filter 550ms var(--ease-reveal),
+      visibility 0s linear 550ms;
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    filter: blur(0);
+  }
+  /* Stagger anak grup: kartu ke-2–4 menyusul 70ms berurutan. */
+  .reveal-group > :nth-child(2) {
+    --reveal-delay: 70ms;
+  }
+  .reveal-group > :nth-child(3) {
+    --reveal-delay: 140ms;
+  }
+  .reveal-group > :nth-child(4) {
+    --reveal-delay: 210ms;
+  }
+
+  /*
+   * Elemen yang di-mount kondisional (toggle): masuk dengan reveal yang sama
+   * lewat @starting-style. Browser lama yang belum mendukung hanya tampil
+   * instan — peningkatan progresif, bukan kegagalan.
+   */
+  .mount-enter {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+    transition:
+      opacity 550ms var(--ease-reveal),
+      transform 550ms var(--ease-reveal),
+      filter 550ms var(--ease-reveal);
+  }
+  @starting-style {
+    .mount-enter {
+      opacity: 0;
+      transform: translateY(10px);
+      filter: blur(6px);
+    }
+  }
+
+  /*
+   * Pertukaran mikro di dalam kontrol (ikon/label tombol): 200ms, skala dari
+   * 0.85 + blur tipis — secepat feedback tekan, semarga kurva reveal.
+   */
+  .swap-enter {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+    transition:
+      opacity 200ms var(--ease-reveal),
+      transform 200ms var(--ease-reveal),
+      filter 200ms var(--ease-reveal);
+  }
+  @starting-style {
+    .swap-enter {
+      opacity: 0;
+      transform: scale(0.85);
+      filter: blur(2px);
+    }
+  }
+
+  /* Batang dimensi + segmen komposisi menyusul angka (400ms, kurva sama). */
+  .bar-fill {
+    transition: width 400ms var(--ease-reveal);
+  }
+  .seg-fill {
+    transition: flex-grow 400ms var(--ease-reveal);
+  }
+
+  /*
+   * Gerak dikurangi: tanpa geser, tanpa blur, tanpa stagger — fade 200ms yang
+   * membantu pemahaman dipertahankan. Count-up JS punya jalurnya sendiri
+   * (use-count-up langsung menampilkan nilai akhir).
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .mount-enter {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      filter: none;
+      transition: opacity 200ms ease-out;
+      transition-delay: 0ms;
+    }
+    .swap-enter {
+      transition: none;
+    }
+    .bar-fill,
+    .seg-fill {
+      transition: none;
+    }
+  }
+@media print {
+  .reveal,
+  .mount-enter,
+  .swap-enter {
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: none !important;
+      filter: none !important;
+      transition: none !important;
+    }
+    .bar-fill, .seg-fill { transition: none !important; }
   }
 }
