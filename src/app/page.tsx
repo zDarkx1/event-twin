@@ -1,6 +1,29 @@
 import { ScenarioSimulator } from "@/components/scenario-simulator";
+<<<<<<< HEAD
+=======
+import { decodeShareParams } from "@/lib/share-url";
 
-export default function Home() {
+/**
+ * Halaman simulator. `searchParams` dibaca di server (F8) sehingga HTML yang
+ * dikirim sudah memuat parameter dari tautan yang dibagikan — bukan nilai
+ * default yang lalu diganti di klien.
+ */
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolved = await searchParams;
+  const qs = new URLSearchParams();
+  for (const [key, value] of Object.entries(resolved)) {
+    if (typeof value === "string") qs.set(key, value);
+    // Kunci yang muncul dua kali (?p=1&p=2) diambil yang terakhir — konsisten
+    // dengan perilaku URLSearchParams.get() pada string query biasa.
+    else if (Array.isArray(value) && value.length > 0) qs.set(key, value[value.length - 1]);
+  }
+  const decoded = decodeShareParams(qs);
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
+
   return (
     <div className="flex-1 bg-background">
       {/*
@@ -21,7 +44,13 @@ export default function Home() {
           </p>
         </header>
 
+<<<<<<< HEAD
         <ScenarioSimulator />
+=======
+        <ScenarioSimulator
+          initial={{ scenario: decoded.scenario, baseline: decoded.baseline }}
+        />
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 
         <footer className="pt-2 text-xs text-muted-foreground">
           Seluruh koefisien perhitungan bersumber dan terdokumentasi di{" "}

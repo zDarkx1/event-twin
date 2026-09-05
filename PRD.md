@@ -42,7 +42,7 @@ EventTwin adalah *digital twin* kegiatan: pengguna mensimulasikan sebuah acara s
 ### 2.2 Tidak termasuk (non-goals)
 
 - **Autentikasi & akun pengguna.** Tidak ada login. Killer feature tidak membutuhkannya.
-- **Database.** State di React; persistensi lewat URL query + localStorage. Menambah Postgres untuk menyimpan tiga baris adalah keputusan teknis yang lemah, dan justru bisa dipertahankan di Q&A sebagai efisiensi teknologi.
+- **Database.** State di React; skenario dibagikan lewat URL query (F8), bukan disimpan di server. Menambah Postgres untuk menyimpan tiga baris adalah keputusan teknis yang lemah, dan justru bisa dipertahankan di Q&A sebagai efisiensi teknologi. Tidak ada `localStorage` juga: satu-satunya persistensi adalah tautan, sehingga tidak ada state tersembunyi yang bisa membuat dua orang melihat angka berbeda dari tautan yang sama.
 - **Backend terpisah (Go/Docker).** Engine adalah perhitungan murni — API route Next.js cukup, dan tanpa network round-trip what-if justru lebih cepat.
 - **Pencatatan sampah aktual pasca-acara.** Ini aplikasi keputusan pra-acara, bukan pelaporan.
 - **Multi-bahasa.** Bahasa Indonesia saja.
@@ -149,11 +149,25 @@ Momen demo: satu perubahan → empat angka bergerak serentak.
 
 Engine menghitung ulang untuk setiap perubahan tunggal yang mungkin (ganti kemasan, ganti lampu, tambah ramp, dst.), lalu mengurutkan berdasarkan pengurangan dampak per rupiah. Menampilkan tiga teratas dengan angka konkret.
 
-Contoh keluaran nyata dari engine (baseline 500 peserta, 6 jam): *"Ganti botol plastik → refill station: −15,0 kg timbulan, −Rp 3.109.660."* dan *"Tambah materi huruf besar: +6,8 poin inklusi, Rp 150.000"* — 45 poin inklusi per juta rupiah, empat kali lebih efisien daripada ramp (11 poin per juta).
+Contoh keluaran nyata dari engine (baseline 500 peserta, 6 jam): *"Ganti botol plastik → refill station: −15,0 kg timbulan, −Rp 2.299.660."* dan *"Tambah materi huruf besar: +6,8 poin inklusi, Rp 150.000"* — 45 poin inklusi per juta rupiah, empat kali lebih efisien daripada ramp (11 poin per juta).
 
 ### 4.5 AI Insight (F7)
 
 Lihat §6. Bersifat pelengkap — jika API tidak tersedia, dashboard tetap berfungsi penuh.
+
+### 4.6 Share via URL (F8)
+
+Seluruh parameter simulasi di-encode ke query string, sehingga hasil simulasi bisa dibagikan tanpa akun dan tanpa database.
+
+**Bentuk tautan.** Kunci disingkat (`p` peserta, `h` durasi, `fp` kemasan, `lt` lampu, `ac` daftar fasilitas, dst.), dan **hanya nilai yang berbeda dari default yang ditulis**. Keputusan baseline memakai prefiks `b` dan hanya muncul kalau berbeda dari skenario aktif — pada kasus paling umum (pengguna belum mengubah baseline) tidak ada satu pun kunci `b`. Tautan yang dibagikan lewat WhatsApp sering terpotong saat ditampilkan, jadi panjangnya bukan hal kosmetik.
+
+Contoh: `?p=1200&fp=reusable&dv=refillStation&lt=led&ac=ramp,largePrint`
+
+**Dibaca di server, bukan di klien.** `searchParams` diselesaikan di Server Component dan diteruskan sebagai props ke simulator. Membaca `window.location` saat inisialisasi state akan menyebabkan hydration mismatch, dan versi effect-nya menghasilkan kedipan nilai default sebelum tautan diterapkan. Dengan pendekatan ini HTML yang dikirim server sudah memuat angka skenario yang benar.
+
+**Decode tidak pernah gagal.** Nilai rusak (`?p=banyak`), enum asing (`?lt=obor`), fasilitas tak dikenal, dan duplikat jatuh ke default atau dibuang. Angka di luar rentang dijepit `clampParams()`, bukan ditolak — tautan lama harus tetap membuka aplikasi.
+
+**URL bar tidak diperbarui saat kontrol digeser.** Menulis ke `history` setiap slider bergerak akan membanjiri riwayat browser dan membuat tombol Back tidak berguna. Tautan dihitung saat tombol salin ditekan. Kalau Clipboard API ditolak (konteks non-HTTPS), tautannya ditampilkan di kolom teks agar tetap bisa disalin manual.
 
 ---
 
@@ -163,6 +177,7 @@ Lihat §6. Bersifat pelengkap — jika API tidak tersedia, dashboard tetap berfu
 ┌─────────────────────────────────────────────────────────────┐
 │  Next.js 16 (App Router, TypeScript, Tailwind v4)           │
 │                                                              │
+<<<<<<< HEAD
 │  ✅ src/lib/coefficients.ts    ← konstanta bersumber        │
 │  ✅ src/lib/engine.ts          ← fungsi murni, deterministik │
 │  ✅ src/lib/engine.test.ts     ← 32 test Vitest             │
@@ -175,6 +190,28 @@ Lihat §6. Bersifat pelengkap — jika API tidak tersedia, dashboard tetap berfu
 ```
 
 Perintah: `npm test` (45 test), `npm run demo:numbers` (regenerasi angka dokumen), `npm run build`, `npm run dev`.
+=======
+│  ✅ src/lib/coefficients.ts        ← konstanta bersumber     │
+│  ✅ src/lib/engine.ts              ← fungsi murni            │
+│  ✅ src/lib/engine.test.ts         ← 32 test                 │
+│  ✅ src/lib/recommend.ts           ← dampak per rupiah       │
+│  ✅ src/lib/recommend.test.ts      ← 13 test                 │
+│  ✅ src/lib/ai-prompt.ts           ← prompt F7, fungsi murni │
+│  ✅ src/lib/ai-prompt.test.ts      ← 10 test                 │
+│  ✅ src/lib/insight-request.ts     ← validasi body request   │
+│  ✅ src/lib/insight-request.test.ts ← 21 test                │
+│  ✅ src/lib/rate-limit.ts          ← pelindung kuota API      │
+│  ✅ src/lib/rate-limit.test.ts     ← 8 test                  │
+│  ✅ src/app/api/insight/route.ts   ← Claude (server-side)    │
+│  ✅ src/app/page.tsx + components/ ← simulator + dashboard   │
+│  ✅ scripts/demo-numbers.ts        ← generator angka demo    │
+│  ✅ src/lib/share-url.ts           ← encode/decode F8         │
+│  ✅ src/lib/share-url.test.ts      ← 20 test                 │
+└─────────────────────────────────────────────────────────────┘
+```
+
+Perintah: `npm test` (104 test), `npm run demo:numbers` (regenerasi angka dokumen), `npm run build`, `npm run dev`.
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 
 **Keputusan teknis dan alasannya (untuk Tanya Jawab juri).**
 
@@ -196,7 +233,20 @@ Perintah: `npm test` (45 test), `npm run demo:numbers` (regenerasi angka dokumen
 
 Batas ini tegas karena juri akan menguji kredibilitas angka. Engine menghasilkan angka; AI menjelaskan artinya. System prompt melarang model mengubah nilai secara eksplisit.
 
-Implementasi: `@anthropic-ai/sdk`, endpoint `/v1/messages`, `effort: "low"` (respons cepat untuk demo). Base URL dapat dikonfigurasi lewat env var sehingga endpoint Anthropic-compatible mana pun bisa dipakai. Key dibaca dari environment, tidak pernah masuk bundle klien.
+Implementasi: `fetch` bawaan ke endpoint `/v1/chat/completions` (skema OpenAI-compatible, autentikasi `Bearer`), tanpa SDK — satu request non-stream tidak butuh lapisan tambahan, dan error upstream (status + body) terbaca apa adanya di log server, bukan terbungkus exception. `temperature: 0.2` (keluaran stabil untuk demo). Base URL dapat dikonfigurasi lewat `ANTHROPIC_BASE_URL` sehingga gateway OpenAI-compatible mana pun bisa dipakai; model lewat `ANTHROPIC_MODEL`. Key dibaca dari environment (`NEW_API_KEY`, atau `ANTHROPIC_API_KEY` untuk setup standar), tidak pernah masuk bundle klien.
+
+Perlindungan endpoint (`/api/insight` adalah satu-satunya jalur yang memanggil API berbayar):
+
+| Lapis | Perilaku |
+|---|---|
+| Rate limit | 10 request/menit per IP, jendela geser. Kuota habis → `429` + header `Retry-After` |
+| Batas body | 16 KB. Lebih besar → `413`, ditolak sebelum di-parse |
+| Validasi | Seluruh field dicek tipe, enum, dan duplikat; field asing dibuang. Gagal → `400` |
+| Perhitungan | Angka dihitung ulang di server dari params; nilai dari klien tidak pernah dipercaya |
+| Timeout | 90 detik, lalu dibatalkan. Dapat diatur lewat `AI_TIMEOUT_MS` |
+| Pesan error | Generik ke klien; detail hanya masuk log server |
+
+Rate limiter menyimpan state di memori proses. Di Vercel setiap instance punya memorinya sendiri, jadi batas efektifnya adalah 10 × jumlah instance aktif — memadai untuk demo, dan bisa diganti ke penyimpanan terdistribusi tanpa mengubah pemanggilnya.
 
 Kegagalan AI ditangani dengan diam: jika request gagal atau ditolak, panel insight tidak muncul dan dashboard tetap utuh. Live demo tidak boleh bergantung pada jaringan.
 
@@ -238,14 +288,24 @@ Babak final: Live Demo 25% + Presentasi 25% → skenario demo di `AGENTS.md` §D
 | 1 Sep | Scaffold, `coefficients.ts` | ✅ selesai |
 | 2 Sep | `engine.ts` + 32 test, kalibrasi koefisien ke sumber primer, regenerasi angka dokumen | ✅ selesai |
 | 2 Sep | `recommend.ts` + 13 test, F1 form, F4 dashboard, F3 simulator, F5 perbandingan, F9 responsif | ✅ selesai |
+<<<<<<< HEAD
 | 3 Sep | Validasi build (`tsc`, `vitest`, `lint`, `next build`), uji visual 360–1920 px | ⬜ |
 | 4 Sep | AI insight, share URL, **deploy Vercel** | ⬜ |
 | 5 Sep | README sesuai template, uji lintas perangkat, perbaikan | ⬜ |
+=======
+| 3 Sep | Validasi build (`tsc`, `vitest`, `lint`, `next build`), F7 AI Insight + pengerasan endpoint, F8 share URL, kalibrasi harga konsumsi | ✅ selesai |
+| 4 Sep | **Deploy Vercel**, repo dijadikan publik, tautan demo masuk README | ⬜ |
+| 5 Sep | Uji lintas perangkat, uji happy path AI dari jaringan tanpa blokir, perbaikan | ⬜ |
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 | 6 Sep | Cadangan + kumpulkan (batas 23.59 WIB) | ⬜ |
 
 Deploy dijadwalkan H-2, bukan hari terakhir. Masalah hosting yang muncul di hari terakhir tidak punya ruang perbaikan.
 
+<<<<<<< HEAD
 **Catatan jujur soal jadwal.** Rencana awal menargetkan form input dan empat kartu dampak selesai 2 Sep. Yang selesai 2 Sep justru lebih banyak: engine, test, kalibrasi koefisien, dan seluruh F1–F6 + F9. Yang belum dikerjakan adalah **validasinya** — `tsc`, `vitest`, `lint`, dan `next build` belum berhasil dijalankan sekali pun sejak UI ditulis, jadi kode UI di atas masih berstatus belum terkompilasi. Itu pekerjaan pertama 3 Sep, sebelum fitur baru apa pun. F7 (AI insight) dan F8 (share URL) tetap yang pertama dilepas kalau waktu habis.
+=======
+**Catatan jujur soal jadwal.** Rencana awal menargetkan form input dan empat kartu dampak selesai 2 Sep. Yang selesai 2–3 Sep: engine, kalibrasi koefisien, F1–F9 lengkap. Seluruhnya divalidasi — `tsc`, `vitest` (104 test), `lint`, dan `next build` berjalan bersih. Sisa yang belum: **deploy Vercel** dan verifikasi happy path AI Insight terhadap endpoint nyata (endpoint yang dipakai saat ini diblokir Cloudflare dari IP datacenter; jalur sukses sudah diuji terhadap gateway tiruan lokal, jalur gagalnya diuji lengkap).
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 
 ---
 

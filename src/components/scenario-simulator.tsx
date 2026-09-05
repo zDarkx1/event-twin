@@ -23,10 +23,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+<<<<<<< HEAD
+=======
+import { AiInsight } from "@/components/ai-insight";
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 import { EventForm } from "@/components/event-form";
 import { ImpactDashboard } from "@/components/impact-dashboard";
 import { RecommendationList } from "@/components/recommendation-list";
 import { ScenarioComparison } from "@/components/scenario-comparison";
+<<<<<<< HEAD
+=======
+import { ShareLink } from "@/components/share-link";
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 
 /**
  * Strip ringkas yang menempel di atas layar sempit.
@@ -82,15 +90,35 @@ function StickySummary({ result }: { result: SimulationResult }) {
   );
 }
 
+<<<<<<< HEAD
 export function ScenarioSimulator() {
   const [params, setParams] = useState<EventParams>(DEFAULT_PARAMS);
+=======
+interface ScenarioSimulatorProps {
+  /**
+   * Nilai awal simulator. Diselesaikan di Server Component dari `searchParams`
+   * (F8), bukan dibaca dari `window.location` di klien: dengan begitu HTML yang
+   * dikirim server sudah memuat angka skenario yang benar, jadi tidak ada
+   * hydration mismatch dan tidak ada kedipan nilai default sebelum tautan
+   * diterapkan.
+   */
+  initial: { scenario: EventParams; baseline: EventParams };
+}
+
+export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
+  const [params, setParams] = useState<EventParams>(initial.scenario);
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
   /**
    * Baseline dibekukan sebagai PARAMS, bukan sebagai hasil: ketika jumlah
    * peserta diubah, baseline harus ikut berskala supaya perbandingannya adil.
    * Yang dibekukan adalah KEPUTUSAN penyelenggaraan, bukan ukuran acaranya.
    */
   const [baselineDecisions, setBaselineDecisions] = useState<EventParams>(
+<<<<<<< HEAD
     DEFAULT_PARAMS,
+=======
+    initial.baseline,
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
   );
 
   const scenario = useMemo(() => clampParams(params), [params]);
@@ -152,9 +180,16 @@ export function ScenarioSimulator() {
             <CardContent>
               <EventForm params={params} onChange={update} />
             </CardContent>
+<<<<<<< HEAD
             <CardContent className="border-t pt-4">
               <Button
                 variant="outline"
+=======
+            <CardContent className="grid gap-2 border-t pt-4">
+              <ShareLink scenario={scenario} baseline={baseline} />
+              <Button
+                variant="ghost"
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
                 size="sm"
                 onClick={reset}
                 className="w-full"
@@ -166,9 +201,21 @@ export function ScenarioSimulator() {
           </Card>
         </div>
 
+<<<<<<< HEAD
         <div className="grid gap-4">
           <ImpactDashboard result={scenarioResult} baseline={baselineResult} />
 
+=======
+        <div className="grid gap-6">
+          <ImpactDashboard result={scenarioResult} baseline={baselineResult} />
+
+          <AiInsight
+            key={JSON.stringify(scenario) + JSON.stringify(baseline)}
+            scenario={scenario}
+            baseline={baseline}
+          />
+
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
           <Card>
             <CardHeader>
               <CardTitle>Rekomendasi berdampak terbesar</CardTitle>

@@ -85,7 +85,7 @@ Konsekuensinya: acara dengan 200 tamu difabel dan tanpa ramp mendapat skor lebih
 
 Engine menghitung ulang setiap perubahan tunggal yang mungkin, lalu mengurutkan berdasarkan **dampak per rupiah**. Contoh hasil nyata untuk acara 500 peserta:
 
-- Ganti botol plastik → refill station: **−15,0 kg** timbulan, **−Rp 3.109.660**
+- Ganti botol plastik → refill station: **−15,0 kg** timbulan, **−Rp 2.299.660**
 - Tambah materi huruf besar: **+6,8 poin** inklusi dengan **Rp 150.000** — 45 poin per juta rupiah, empat kali lebih efisien daripada ramp (11 poin per juta)
 
 Temuan seperti ini tidak terlihat tanpa model.
@@ -93,6 +93,16 @@ Temuan seperti ini tidak terlihat tanpa model.
 ### 🔍 Scenario Comparison
 
 Bandingkan beberapa strategi berdampingan pada keempat dimensi sekaligus.
+
+### 🔗 Share via URL
+
+Seluruh parameter simulasi di-encode ke query string, jadi hasil simulasi bisa dibagikan ke panitia lain tanpa akun dan tanpa database:
+
+```
+https://…/?p=1200&fp=reusable&dv=refillStation&lt=led&ac=ramp,largePrint
+```
+
+Hanya nilai yang berbeda dari default yang ikut ditulis, sehingga tautannya tetap pendek. Query string dibaca di server, jadi HTML yang diterima penerima sudah memuat angka skenario yang benar — bukan angka default yang lalu berubah. Tautan dengan nilai rusak tetap membuka aplikasi dengan nilai default, bukan halaman error.
 
 ---
 
@@ -119,7 +129,7 @@ Tiga hal yang dinyatakan apa adanya, bukan disembunyikan:
 2. Tarif Rp 1.444,70 adalah golongan **B-2/TR (bisnis)**. Venue sekolah dengan sambungan sosial S-2/TR tarifnya Rp 900/kWh.
 3. Angka sisa makanan berasal dari **sektor jasa makanan UK**, bukan data Indonesia — tidak ada angka kg-per-porsi nasional yang bisa dikutip.
 
-Koefisien yang **masih asumsi model** (harga katering, tarif genset, retribusi angkut, watt pencahayaan, bobot rubrik inklusi) ditandai eksplisit sebagai asumsi di `COEFFICIENTS.md`. Menyebut sumber yang belum dicek lebih merusak daripada mengakui asumsi dengan alasan yang jelas.
+Koefisien yang **masih asumsi model** (tarif genset, retribusi angkut, watt pencahayaan, biaya fasilitas akses, bobot rubrik inklusi) ditandai eksplisit sebagai asumsi di `COEFFICIENTS.md`. Harga katering dan minuman sudah dikalibrasi ke daftar harga terbitan Jabodetabek per 3 September 2026. Menyebut sumber yang belum dicek lebih merusak daripada mengakui asumsi dengan alasan yang jelas.
 
 **Angka demo digenerate dari engine**, bukan ditulis manual:
 
@@ -139,9 +149,17 @@ Ini yang mencegah dokumen dan aplikasi menampilkan angka berbeda saat live demo.
 | [React](https://react.dev) | 19.2.8 | UI library |
 | [TypeScript](https://www.typescriptlang.org) | 5.x | Type safety pada engine dan komponen; mode `strict` |
 | [Tailwind CSS](https://tailwindcss.com) | 4.x | Styling utility-first, mobile-first responsif |
+<<<<<<< HEAD
 | [Vitest](https://vitest.dev) | 3.2.4 | Unit test engine simulasi + recommendation (45 test) |
+=======
+| [Vitest](https://vitest.dev) | 3.2.4 | Unit test engine, rekomendasi, prompt AI, validasi request, rate limit, share URL (104 test) |
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 | [ESLint](https://eslint.org) | 9.x | Linting dengan `eslint-config-next` |
-| [Anthropic SDK](https://github.com/anthropics/anthropic-sdk-typescript) | 0.122.0 | AI Insight — menarasikan hasil simulasi (opsional) |
+| [Radix UI](https://www.radix-ui.com) | 1.x | Primitif komponen aksesibel (slider, select, checkbox, tabs) |
+
+> AI Insight memanggil endpoint `/v1/chat/completions` lewat `fetch` bawaan — tanpa SDK, tanpa dependency runtime tambahan.
+>
+> Grafik komposisi sampah memakai **flexbox murni**, tanpa chart library: satu batang part-to-whole hanyalah pembagian lebar proporsional, dan `flex-grow` melakukannya persis di setiap lebar layar tanpa JavaScript saat resize.
 
 ### Keputusan teknis dan alasannya
 
@@ -173,7 +191,12 @@ event-twin/
 │   ├── app/
 │   │   ├── layout.tsx              # Root layout
 │   │   ├── page.tsx                # Halaman simulator
+<<<<<<< HEAD
 │   │   └── globals.css             # Tailwind + design token
+=======
+│   │   ├── globals.css             # Tailwind + design token
+│   │   └── api/insight/route.ts    # F7 — endpoint AI (server-side)
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 │   ├── components/
 │   │   ├── scenario-simulator.tsx  # F3 — menyatukan form, dashboard, rekomendasi
 │   │   ├── event-form.tsx          # F1 — 13 field parameter acara
@@ -182,6 +205,11 @@ event-twin/
 │   │   ├── waste-composition-chart.tsx  # Batang part-to-whole (flexbox murni)
 │   │   ├── recommendation-list.tsx # F6 — tiga langkah berdampak terbesar
 │   │   ├── scenario-comparison.tsx # F5 — tabel baseline vs skenario
+<<<<<<< HEAD
+=======
+│   │   ├── ai-insight.tsx          # F7 — panel narasi AI
+│   │   ├── share-link.tsx          # F8 — tombol salin tautan
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 │   │   ├── field.tsx               # Pembungkus label + hint yang terhubung
 │   │   └── ui/                     # Primitif shadcn/ui
 │   └── lib/
@@ -190,11 +218,23 @@ event-twin/
 │       ├── engine.test.ts          # 32 unit test engine
 │       ├── recommend.ts            # Peringkat dampak per rupiah
 │       ├── recommend.test.ts       # 13 unit test rekomendasi
+<<<<<<< HEAD
+=======
+│       ├── ai-prompt.ts            # Prompt F7 — fungsi murni
+│       ├── ai-prompt.test.ts       # 10 unit test prompt
+│       ├── insight-request.ts      # Validasi body request /api/insight
+│       ├── insight-request.test.ts # 21 unit test validasi
+│       ├── rate-limit.ts           # Pelindung kuota API
+│       ├── rate-limit.test.ts      # 8 unit test rate limit
+│       ├── share-url.ts            # F8 — encode/decode query string
+│       ├── share-url.test.ts       # 20 unit test share URL
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 │       ├── defaults.ts             # Nilai awal Event Builder
 │       ├── labels.ts               # Label opsi bahasa Indonesia
 │       └── format.ts               # Format angka id-ID
 ├── scripts/
 │   └── demo-numbers.ts             # Generator angka demo dari engine
+├── .env.example                    # Contoh konfigurasi environment
 ├── COEFFICIENTS.md                 # Sumber & status setiap koefisien
 ├── PRD.md                          # Spesifikasi produk
 └── AGENTS.md                       # Konsep & materi pitching
@@ -238,15 +278,23 @@ Langkah ini **hanya** diperlukan kalau ingin mengaktifkan fitur AI Insight. Tanp
 Buat file `.env.local` di root proyek:
 
 ```bash
-ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxx
+NEW_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ANTHROPIC_BASE_URL=https://api.anthropic.com    # opsional — gateway OpenAI-compatible mana pun
+ANTHROPIC_MODEL=claude-opus-5                   # opsional
 ```
+
+Salin dari `.env.example` bila perlu. Key hanya dibaca di `src/app/api/insight/route.ts` (server-only, `runtime: nodejs`) — tidak pernah masuk bundle browser. Nama `ANTHROPIC_API_KEY` juga masih didukung untuk setup Anthropic standar.
 
 > ⚠️ `.env.local` sudah masuk `.gitignore`. Jangan pernah commit API key ke repositori.
 
 **4. Verifikasi instalasi**
 
 ```bash
+<<<<<<< HEAD
 npm test     # 45 test harus lolos
+=======
+npm test     # 104 test harus lolos
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 npm run build # build produksi harus sukses
 ```
 
@@ -269,7 +317,11 @@ Buka [http://localhost:3000](http://localhost:3000).
 | `npm run dev` | Development server dengan hot reload |
 | `npm run build` | Build produksi |
 | `npm start` | Jalankan hasil build produksi |
+<<<<<<< HEAD
 | `npm test` | Jalankan seluruh unit test (45 test) |
+=======
+| `npm test` | Jalankan seluruh unit test (104 test) |
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 | `npm run test:watch` | Test dalam mode watch |
 | `npm run lint` | Periksa kualitas kode dengan ESLint |
 | `npm run demo:numbers` | Generate tabel angka demo dari engine |
@@ -337,9 +389,9 @@ Festival sekolah, 500 peserta, 6 jam — angka digenerate `npm run demo:numbers`
 
 | Skenario | Timbulan | Residu ke TPA | Energi | Emisi | Biaya operasional | Inklusi | Sustainability |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Disposable | 99,5 kg | 91,5 kg | 54,0 kWh | 47,0 kg CO₂ | Rp 11.642.092 | 32 / 100 | 15 / 100 |
-| Reusable | 75,5 kg | 69,5 kg | 54,0 kWh | 47,0 kg CO₂ | Rp 8.026.636 | 32 / 100 | 47 / 100 |
-| Reusable + akses & energi efisien | 75,5 kg | 55,9 kg | 30,0 kWh | 26,1 kg CO₂ | Rp 13.932.450 | 100 / 100 | 96 / 100 |
+| Disposable | 99,5 kg | 91,5 kg | 54,0 kWh | 47,0 kg CO₂ | Rp 13.242.092 | 32 / 100 | 15 / 100 |
+| Reusable | 75,5 kg | 69,5 kg | 54,0 kWh | 47,0 kg CO₂ | Rp 10.436.636 | 32 / 100 | 47 / 100 |
+| Reusable + akses & energi efisien | 75,5 kg | 55,9 kg | 30,0 kWh | 26,1 kg CO₂ | Rp 16.342.450 | 100 / 100 | 96 / 100 |
 
 Perhatikan skenario ketiga: totalnya **lebih mahal** karena enam fasilitas aksesibilitas menambah Rp 5,95 juta, meski konsumsi dan energi turun. Itu memang temuan modelnya — inklusi tidak gratis, dan panitia perlu melihat trade-off itu secara eksplisit.
 
@@ -351,7 +403,11 @@ Perhatikan skenario ketiga: totalnya **lebih mahal** karena enam fasilitas akses
 npm test
 ```
 
+<<<<<<< HEAD
 45 unit test menutupi keempat dimensi engine, normalisasi skor, validasi input, peringkat rekomendasi, dan satu test regresi khusus untuk formula inklusi.
+=======
+104 unit test menutupi keempat dimensi engine, normalisasi skor, validasi input, peringkat rekomendasi, prompt AI Insight, validasi body request endpoint, rate limiter, encode/decode share URL, dan satu test regresi khusus untuk formula inklusi.
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 
 Contoh yang diuji:
 
@@ -361,6 +417,12 @@ Contoh yang diuji:
 - Skor inklusi membedakan 2 tamu difabel dari 200 tamu difabel walaupun sama-sama tanpa fasilitas — perilaku yang gagal pada formula perkalian versi awal.
 - `clampParams()` menangani nilai di luar rentang dan `NaN`.
 - Rekomendasi tidak pernah mengusulkan mencabut fasilitas akses yang sudah ada, dan tidak pernah mengusulkan nilai yang sedang dipakai.
+<<<<<<< HEAD
+=======
+- Endpoint `/api/insight` menolak enum di luar daftar, duplikat fasilitas, `NaN`, `null`, angka berbentuk string, dan membuang field asing dari body.
+- Rate limiter memakai jendela geser (bukan jendela tetap) dan tidak membiarkan peta identitas tumbuh tanpa batas.
+- Share URL bolak-balik utuh, membuang kunci yang sama dengan default, dan jatuh ke default (bukan error) saat nilainya rusak.
+>>>>>>> 83336ac66993ce98b50edec30a5abff7f79e5fcc
 
 ---
 
