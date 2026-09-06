@@ -153,6 +153,9 @@ export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
   );
   const [layout, setLayout] = useState<VenueLayout>(DEFAULT_LAYOUT);
   const [savedAt, setSavedAt] = useState<string | null>(null);
+  // Diukur setelah mount: server tidak punya localStorage. Default true supaya
+  // SSR tidak kedip; koreksi sekali di klien.
+  const [storageOk, setStorageOk] = useState(true);
 
   // Lewati satu autosave setelah reset supaya default tidak ditulis balik.
   const skipSaveRef = useRef(false);
@@ -194,6 +197,16 @@ export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
     );
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [initial.hasParams]);
+
+  // Ketersediaan penyimpanan diukur sekali saat mount — jalan untuk pembuka
+  // tautan maupun pembuka biasa. Tanpa ini indikator mengaku autosave padahal
+  // localStorage bisa terblokir (cookie diblokir / iframe sandbox).
+  const measuredRef = useRef(false);
+  useEffect(() => {
+    if (measuredRef.current) return;
+    measuredRef.current = true;
+    setStorageOk(getStorageOrNull() !== null);
+  }, []);
 
   const scenario = useMemo(() => clampParams(params), [params]);
 
@@ -410,9 +423,11 @@ export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
                 screen reader saat berubah.
               */}
               <p role="status" className="text-xs text-muted-foreground tabular-nums">
-                {savedTime === null
-                  ? "Perubahan tersimpan otomatis di perangkat ini"
-                  : `Draf tersimpan · ${savedTime}`}
+                {!storageOk
+                  ? "Penyimpanan lokal tidak tersedia — perubahan tidak tersimpan otomatis di perangkat ini."
+                  : savedTime === null
+                    ? "Perubahan tersimpan otomatis di perangkat ini"
+                    : `Draf tersimpan · ${savedTime}`}
               </p>
               <Button
                 variant="ghost"
