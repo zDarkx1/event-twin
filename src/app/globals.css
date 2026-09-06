@@ -307,10 +307,11 @@
     }
     .bar-fill, .seg-fill { transition: none !important; }
 
-    /* Tombol tak berguna di kertas — satu aturan global, bukan print:hidden
-     * di tiap tombol Terapkan/Salin/Reset/zoom.
+    /* Tombol tak berguna di kertas — satu aturan untuk seluruh simulator,
+     * bukan print:hidden di tiap tombol Terapkan/Salin/Reset/zoom. Discoping
+     * ke .sim-root supaya halaman lain (landing) bebas mencetak tombolnya.
      */
-    button { display: none !important; }
+    .sim-root button { display: none !important; }
 
     /* Grid dua kolom (form + hasil) dilinearisasi; gap grid tetap berlaku. */
     .sim-grid { grid-template-columns: 1fr !important; }

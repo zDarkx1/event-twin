@@ -353,8 +353,9 @@ export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
       Root sengaja block, bukan grid: `position: sticky` pada grid item dibatasi
       grid area-nya sendiri (satu baris), jadi strip ringkas tidak akan bergerak
       sama sekali. Grid dua kolom dipasang di elemen dalam.
+      `sim-root` membatasi aturan print sembunyikan-tombol ke halaman ini saja.
     */
-    <div>
+    <div className="sim-root">
       <StickySummary result={scenarioResult} />
 
       <div className="sim-grid grid gap-6">

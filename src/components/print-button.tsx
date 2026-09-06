@@ -16,8 +16,9 @@ export function PrintButton() {
       variant="outline"
       size="sm"
       onClick={() => {
-        // Bangunkan hook count-up agar menjepret ke nilai akhir sebelum kertas diambil.
-        window.dispatchEvent(new Event("beforeprint"));
+        // beforeprint terpicu native oleh window.print() (spec HTML); listener
+        // di use-count-up menjepret angka ke nilai akhir secara sinkron
+        // (flushSync) sebelum dialog cetak membekukan DOM.
         window.print();
       }}
       className="w-full print:hidden"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { easeOutReveal } from "./easing";
 
 /**
@@ -50,12 +51,14 @@ export function useCountUp(target: number): number {
   const rafRef = useRef(0);
   // Cetak menangkap nilai tengah tween — jepret ke nilai akhir lewat jalur
   // instan yang sama seperti reduced-motion. Menerima Ctrl+P browser juga.
+  // flushSync wajib: window.print() MEMBLOKIR di dalam handler yang sama,
+  // jadi setState biasa (batched) belum commit saat snapshot kertas diambil.
   useEffect(() => {
     const snap = () => {
       cancelAnimationFrame(rafRef.current);
       if (displayRef.current !== target) {
         displayRef.current = target;
-        setDisplay(target);
+        flushSync(() => setDisplay(target));
       }
     };
     window.addEventListener("beforeprint", snap);
