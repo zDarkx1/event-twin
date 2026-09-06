@@ -64,6 +64,37 @@ describe("parseInsightRequest — field numerik", () => {
   });
 });
 
+describe("parseInsightRequest — beban listrik denah (extra kW)", () => {
+  it("menerima extraLightingKw/extraSoundKw yang sah dan meneruskannya", () => {
+    const r = parseInsightRequest(body({ extraLightingKw: 0.4, extraSoundKw: 1.5 }));
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.params.extraLightingKw).toBe(0.4);
+      expect(r.value.params.extraSoundKw).toBe(1.5);
+    }
+  });
+
+  it("menerima nol — denah tanpa kotak listrik", () => {
+    expect(parseInsightRequest(body({ extraLightingKw: 0, extraSoundKw: 0 })).ok).toBe(true);
+  });
+
+  it("menerima request tanpa field extra sama sekali (denah tidak dipakai)", () => {
+    const r = parseInsightRequest(body());
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.params.extraLightingKw).toBeUndefined();
+      expect(r.value.params.extraSoundKw).toBeUndefined();
+    }
+  });
+
+  it("menolak extra kW negatif, NaN, Infinity, dan string", () => {
+    for (const bad of [-0.1, Number.NaN, Number.POSITIVE_INFINITY, "0.2"]) {
+      expect(parseInsightRequest(body({ extraLightingKw: bad })).ok).toBe(false);
+      expect(parseInsightRequest(body({ extraSoundKw: bad })).ok).toBe(false);
+    }
+  });
+});
+
 describe("parseInsightRequest — enum", () => {
   it("menolak nilai enum di luar daftar", () => {
     expect(parseInsightRequest(body({ foodPackaging: "emas" })).ok).toBe(false);

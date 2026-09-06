@@ -461,8 +461,8 @@ export const LayoutEditor = memo(function LayoutEditor({
     const onMove = (e: PointerEvent) => {
       const drag = dragRef.current;
       if (!drag) return;
-      // Tolak jari kedua; pointer utama selalu lolos.
-      if (e.pointerId !== drag.pointerId && !e.isPrimary) return;
+      // Tolak pointer lain apa pun — ID harus cocok dengan yang memulai seret.
+      if (e.pointerId !== drag.pointerId) return;
       if (drag.kind === "pan") {
         const dx = e.clientX - drag.startClientX;
         const dy = e.clientY - drag.startClientY;
@@ -492,7 +492,7 @@ export const LayoutEditor = memo(function LayoutEditor({
     const onUp = (e: PointerEvent) => {
       const drag = dragRef.current;
       if (!drag) return;
-      if (e.pointerId !== drag.pointerId && !e.isPrimary) return;
+      if (e.pointerId !== drag.pointerId) return;
       dragRef.current = null;
       ghostRef.current = null;
       setGhost(null);
@@ -503,12 +503,11 @@ export const LayoutEditor = memo(function LayoutEditor({
       }
 
       if (drag.kind === "new") {
-        // Klik tanpa gerak = mode taruh, bukan drop.
-        if (!drag.moved) {
-          setArmed(drag.type);
-          setSelectedId(null);
-          return;
-        }
+        // Klik tanpa gerak: biarkan event click di tombol palet yang mengatur
+        // mode taruh. Kalau di-arm di sini, click yang menyusul justru
+        // men-toggle-nya mati (preventDefault pointerdown tidak meniadakan
+        // click), dan tombol yang sama tak bisa dipakai men-toggle off.
+        if (!drag.moved) return;
         // Jalur drop sungguhan — abaikan klik palet berikutnya.
         suppressUntilRef.current = Date.now() + 500;
         // Hitung segar dari koordinat lepas, jangan percaya ref.

@@ -59,6 +59,12 @@ function oneOf<T extends string>(v: unknown, allowed: readonly T[]): T | null {
     : null;
 }
 
+/** kW denah: angka berhingga non-negatif, atau null kalau bentuknya salah. */
+function extraKw(v: unknown): number | null {
+  const n = finiteNumber(v);
+  return n !== null && n >= 0 ? n : null;
+}
+
 function accessibilityList(v: unknown): AccessibilityFeature[] | null {
   if (!Array.isArray(v)) return null;
   if (v.length > ACCESSIBILITY_FEATURES.length) return null;
@@ -120,6 +126,14 @@ function toEventParams(raw: unknown): EventParams | null {
     return null;
   }
 
+  // Beban listrik denah venue (F10) — opsional. Kalau ada, harus angka berhingga
+  // non-negatif; ditolak, bukan ditebak, konsisten dengan filosofi validator.
+  // Tanpa ini, narasi AI menghitung ulang energi TANPA beban denah dan angkanya
+  // berbeda dari dashboard di sampingnya.
+  const extraLightingKw = raw.extraLightingKw === undefined ? undefined : extraKw(raw.extraLightingKw);
+  const extraSoundKw = raw.extraSoundKw === undefined ? undefined : extraKw(raw.extraSoundKw);
+  if (extraLightingKw === null || extraSoundKw === null) return null;
+
   // Objek dibangun ulang dari field yang dikenal saja — field asing tidak lolos.
   return {
     participants,
@@ -135,6 +149,8 @@ function toEventParams(raw: unknown): EventParams | null {
     powerSource,
     accessibility,
     estimatedDisabledGuests,
+    ...(extraLightingKw !== undefined && { extraLightingKw }),
+    ...(extraSoundKw !== undefined && { extraSoundKw }),
   };
 }
 
