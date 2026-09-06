@@ -18,11 +18,12 @@ import { encodeShareParams } from "@/lib/share-url";
 interface ShareLinkProps {
   scenario: EventParams;
   baseline: EventParams;
+  hasLayoutLoad?: boolean;
 }
 
 type State = "idle" | "copied" | "failed";
 
-export function ShareLink({ scenario, baseline }: ShareLinkProps) {
+export function ShareLink({ scenario, baseline, hasLayoutLoad }: ShareLinkProps) {
   const [state, setState] = useState<State>("idle");
   const [manualUrl, setManualUrl] = useState("");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -86,7 +87,9 @@ export function ShareLink({ scenario, baseline }: ShareLinkProps) {
       <p aria-live="polite" className="text-xs text-muted-foreground">
         <span key={state === "copied" ? "copied" : "idle"} className="swap-enter inline-block">
           {state === "copied"
-            ? "Tautan memuat seluruh parameter — penerima melihat skenario yang sama."
+            ? hasLayoutLoad
+              ? "Tautan tersalin — tanpa beban denah, lihat catatan."
+              : "Tautan memuat seluruh parameter — penerima melihat skenario yang sama."
             : "Bagikan hasil simulasi tanpa perlu akun atau database."}
         </span>
       </p>

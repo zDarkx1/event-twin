@@ -42,7 +42,12 @@ export default async function Home({
         </header>
 
         <ScenarioSimulator
-          initial={{ scenario: decoded.scenario, baseline: decoded.baseline }}
+          key={qs.toString()}
+          initial={{
+            scenario: decoded.scenario,
+            baseline: decoded.baseline,
+            hasParams: decoded.hasParams,
+          }}
         />
 
         <footer className="pt-2 text-xs text-muted-foreground">

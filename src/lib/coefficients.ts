@@ -99,3 +99,17 @@ export const LIMITS = {
   drinksPerPerson: { min: 0, max: 8 },
   soundSystemKw: { min: 0, max: 20 },
 } as const;
+
+/**
+ * ASUMSI MODEL (belum terverifikasi — lihat COEFFICIENTS.md §7). Jembatan
+ * antara kotak di denah venue dan engine: tiap kotak lighting/sound adalah
+ * beban listrik nyata, tiap stasiun sampah melayani sekian peserta.
+ */
+export const LAYOUT = {
+  /** Satu menara lighting = 4 sorot LED 50 W. */
+  lightingKwPerBox: 0.2,
+  /** Satu titik sound tambahan = sepasang speaker aktif 250 W. */
+  soundKwPerBox: 0.5,
+  /** Satu stasiun pilah melayani 150 peserta sebelum antrean menumpuk. */
+  wasteStationCoverage: 150,
+} as const;

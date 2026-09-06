@@ -66,6 +66,14 @@ interface Candidate {
   params: EventParams;
 }
 
+/** Beban denah tidak boleh bocor ke kandidat — rekomendasi hanya mengubah keputusan form. */
+function stripExtras(p: EventParams): EventParams {
+  const clean = { ...p };
+  delete clean.extraLightingKw;
+  delete clean.extraSoundKw;
+  return clean;
+}
+
 /**
  * Semua perubahan satu-langkah dari `params`: lima keputusan enum (setiap nilai
  * selain yang sedang dipakai) dan penambahan fasilitas akses yang belum ada.
@@ -186,9 +194,10 @@ export function recommend(
   params: EventParams,
   limit = 3,
 ): Recommendation[] {
-  const baseline = simulate(params);
+  const cleanParams = stripExtras(params);
+  const baseline = simulate(cleanParams);
 
-  const ranked = enumerateCandidates(params)
+  const ranked = enumerateCandidates(cleanParams)
     .map((candidate): Recommendation => {
       const delta = computeDelta(baseline, simulate(candidate.params));
       const savesMoney = delta.costRp < -EPSILON;

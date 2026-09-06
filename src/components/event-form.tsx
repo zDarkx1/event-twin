@@ -267,7 +267,8 @@ export function EventForm({ params, onChange }: EventFormProps) {
 
         <Field
           id="soundSystemKw"
-          label="Daya sound system"
+          label="Daya sound system utama"
+          hint="Belum termasuk titik sound di denah — titik denah menambah otomatis."
           valueLabel={`${decimal(params.soundSystemKw)} kW`}
           nativeControl={false}
         >
@@ -277,6 +278,7 @@ export function EventForm({ params, onChange }: EventFormProps) {
             step={0.5}
             value={[params.soundSystemKw]}
             aria-labelledby="soundSystemKw-label"
+            aria-describedby="soundSystemKw-hint"
             aria-valuetext={`${decimal(params.soundSystemKw)} kilowatt`}
             onValueChange={([v]) => onChange({ soundSystemKw: v })}
           />

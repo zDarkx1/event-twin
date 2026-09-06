@@ -297,3 +297,17 @@ Status: `ASUMSI MODEL`. Bobot ini adalah pilihan desain. Yang perlu dipertahanka
 3. **Asumsi disebut asumsi.** Menyebut sumber yang belum dicek jauh lebih merusak daripada mengakui asumsi dengan alasan yang jelas.
 4. **Angka demo digenerate, tidak ditulis manual.** Jalankan `npm run demo:numbers` untuk menghasilkan tabel dari engine. Setiap perubahan koefisien wajib diikuti regenerasi tabel di `AGENTS.md` dan `PRD.md` — inilah yang mencegah dokumen dan aplikasi menampilkan angka berbeda saat live demo.
 5. **Sisa yang masih `PERLU VERIFIKASI` / `ASUMSI MODEL`:** harga katering dan minuman, tarif genset, retribusi angkut sampah, faktor emisi genset, watt pencahayaan per orang, faktor pemilahan, biaya fasilitas akses, seluruh rubrik inklusi. Prioritas berikutnya: harga konsumsi (paling besar pengaruhnya ke total biaya — 98,8% dari biaya operasional baseline) dan watt pencahayaan.
+
+---
+
+## 7. Denah venue (beban listrik + saran)
+
+Jembatan antara kotak di denah dan engine (`LAYOUT` di `coefficients.ts`, turunan di `layout.ts`). Semua baris di bawah adalah `ASUMSI MODEL` - angka kerja yang wajar untuk demo, bukan data terukur. Disebutkan apa adanya saat pitching.
+
+| Parameter | Nilai | Status | Alasan |
+|---|---:|---|---|
+| 1 menara lighting | 0,2 kW (= 4 sorot LED 50 W) | `ASUMSI MODEL` | Paket menara LED portabel yang umum disewa panitia sekolah |
+| 1 titik sound tambahan | 0,5 kW (= sepasang speaker aktif 250 W) | `ASUMSI MODEL` | Speaker aktif 12-15 inci untuk titik jauh dari panggung utama |
+| Cakupan 1 stasiun pilah | 150 peserta | `ASUMSI MODEL` | Stasiun berisi 3 tong; ambang eksak stations*150 >= participants untuk terpilah, di bawah itu campur |
+
+**Cara kerja kopling (jujur soal mana yang otomatis).** Beban listrik denah bersifat ADITIF dan otomatis: `extraLightingKw` / `extraSoundKw` dikalikan durasi di `computeEnergy`, tanpa melawan kontrol form mana pun (tidak ada slider "kW denah"). Slider daya sound di form adalah rig utama; kotak titik sound di denah adalah satelit yang menambah di atasnya. Sampah dan akses hanya SARAN sekali klik: stasiun yang cakupannya memenuhi peserta menyarankan pemilahan terpilah, kotak ramp/toilet difabel/kursi prioritas menyarankan fasilitas yang sama di form. Hanya 3 fasilitas akses yang bisa diturunkan dari denah; signLanguage/tactilePath/largePrint adalah layanan tanpa kotak sehingga tidak punya saran denah. Baseline dan tautan berbagi tidak membawa beban denah — denah adalah rencana aktif. Form selalu bisa menolak saran - tidak ada konflik dua penulis. Grid dibatasi 6–64 kolom × 4–48 baris (maksimal 64×48 = 3072 sel; default 32×24). Editor menumbuhkan grid tampil sampai memenuhi layar; yang tersimpan hanya tumbuh saat kotak benar-benar ditaruh di zona baru. Basis fit (lebar venue saat denah kosong) dibekukan supaya penempatan di tepi tidak me-reset skala sel. Zoom hanya ke dalam (lantai 100% = pas memenuhi layar, plafon 300%); hapus kotak memadatkan venue kembali ke sisa kotak (lantai default).

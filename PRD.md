@@ -38,11 +38,12 @@ EventTwin adalah *digital twin* kegiatan: pengguna mensimulasikan sebuah acara s
 | F7 | AI Insight — narasi bahasa Indonesia atas hasil simulasi | Sebaiknya |
 | F8 | Share via URL — encode parameter ke query string | Sebaiknya |
 | F9 | Responsif mobile | Wajib (15% bobot) |
+| F10 | Denah venue — editor 2D drag-and-drop + draf lokal | Tambahan (di luar target awal) |
 
 ### 2.2 Tidak termasuk (non-goals)
 
 - **Autentikasi & akun pengguna.** Tidak ada login. Killer feature tidak membutuhkannya.
-- **Database.** State di React; skenario dibagikan lewat URL query (F8), bukan disimpan di server. Menambah Postgres untuk menyimpan tiga baris adalah keputusan teknis yang lemah, dan justru bisa dipertahankan di Q&A sebagai efisiensi teknologi. Tidak ada `localStorage` juga: satu-satunya persistensi adalah tautan, sehingga tidak ada state tersembunyi yang bisa membuat dua orang melihat angka berbeda dari tautan yang sama.
+- **Database.** State di React; skenario dibagikan lewat URL query (F8), bukan disimpan di server. Menambah Postgres untuk menyimpan tiga baris adalah keputusan teknis yang lemah, dan justru bisa dipertahankan di Q&A sebagai efisiensi teknologi. Draf `localStorage` (F10) adalah pengecualian yang disengaja terhadap "tanpa persistensi lokal": ia eksplisit (indikator "Draf tersimpan" dengan jam), berversi, tidak pernah menimpa state dari tautan berbagi (tautan selalu menang sampai pengguna menyentuh kontrol), dan denah tidak ikut terkirim lewat tautan — keterbatasan ini ditulis di UI, bukan disembunyikan.
 - **Backend terpisah (Go/Docker).** Engine adalah perhitungan murni — API route Next.js cukup, dan tanpa network round-trip what-if justru lebih cepat.
 - **Pencatatan sampah aktual pasca-acara.** Ini aplikasi keputusan pra-acara, bukan pelaporan.
 - **Multi-bahasa.** Bahasa Indonesia saja.

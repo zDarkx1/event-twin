@@ -195,3 +195,25 @@ describe("recommend — pengurutan", () => {
     expect(recommend(params)).toHaveLength(0);
   });
 });
+
+describe("recommend — tripwire beban denah", () => {
+  const energized: EventParams = {
+    ...BASE,
+    extraLightingKw: 0.4,
+    extraSoundKw: 0.5,
+  };
+
+  it("id rekomendasi identik dengan/tanpa beban denah", () => {
+    const cleanIds = recommend(BASE, 99).map((r) => r.id);
+    const loadedIds = recommend(energized, 99).map((r) => r.id);
+
+    expect(loadedIds).toEqual(cleanIds);
+  });
+
+  it("params kandidat tidak membawa extras denah", () => {
+    for (const r of recommend(energized, 99)) {
+      expect(r.params.extraLightingKw).toBeUndefined();
+      expect(r.params.extraSoundKw).toBeUndefined();
+    }
+  });
+});
