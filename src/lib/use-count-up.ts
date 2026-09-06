@@ -48,6 +48,19 @@ export function useCountUp(target: number): number {
   const [display, setDisplay] = useState(target);
   const displayRef = useRef(target);
   const rafRef = useRef(0);
+  // Cetak menangkap nilai tengah tween — jepret ke nilai akhir lewat jalur
+  // instan yang sama seperti reduced-motion. Menerima Ctrl+P browser juga.
+  useEffect(() => {
+    const snap = () => {
+      cancelAnimationFrame(rafRef.current);
+      if (displayRef.current !== target) {
+        displayRef.current = target;
+        setDisplay(target);
+      }
+    };
+    window.addEventListener("beforeprint", snap);
+    return () => window.removeEventListener("beforeprint", snap);
+  }, [target]);
 
   useEffect(() => {
     const from = displayRef.current;

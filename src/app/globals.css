@@ -4,6 +4,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Margin halaman cetak — @page wajib di top level, di luar layer/media. */
+@page { margin: 12mm; }
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -303,6 +306,33 @@
       transition: none !important;
     }
     .bar-fill, .seg-fill { transition: none !important; }
+
+    /* Tombol tak berguna di kertas — satu aturan global, bukan print:hidden
+     * di tiap tombol Terapkan/Salin/Reset/zoom.
+     */
+    button { display: none !important; }
+
+    /* Grid dua kolom (form + hasil) dilinearisasi; gap grid tetap berlaku. */
+    .sim-grid { grid-template-columns: 1fr !important; }
+
+    /*
+     * Kartu boleh terbelah halaman: avoid di semua kartu + overflow-hidden
+     * membuat celah kosong / isi terpotong. Hanya kepala kartu yang dijaga
+     * utuh; snapshot denah dibatasi tingginya (170mm) jadi avoid-nya aman.
+     */
+    [data-slot="card"] { break-inside: auto; }
+    [data-slot="card-header"] { break-inside: avoid; }
+    .layout-print-figure { break-inside: avoid; }
+    /*
+     * Browser membuang background CSS di cetakan secara default — tanpa ini
+     * batang komposisi, bar dimensi, titik aksen, dan lencana bernomor
+     * (teks terang di atas background) tercetak kosong/tak terbaca.
+     * Aplikasi hanya punya tema terang, jadi warna persis dipaksa global.
+     */
+    *, *::before, *::after {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
   }
 }
 
