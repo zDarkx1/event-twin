@@ -114,6 +114,17 @@ describe("encodeShareParams — bentuk keluaran", () => {
     expect(qs).not.toContain("bp=");
     expect(qs).not.toContain("bh=");
   });
+
+  it("tidak membawa beban denah — tripwire berbagi tanpa layout", () => {
+    const energized: EventParams = {
+      ...SCENARIO,
+      extraLightingKw: 0.4,
+      extraSoundKw: 0.5,
+    };
+    const qs = encodeShareParams(energized, energized);
+
+    expect(qs).not.toMatch(/extra|layout/i);
+  });
 });
 
 describe("decodeShareParams — toleran terhadap masukan rusak", () => {
@@ -130,6 +141,18 @@ describe("decodeShareParams — toleran terhadap masukan rusak", () => {
     expect(decodeShareParams(new URLSearchParams("utm_source=wa")).hasParams).toBe(
       false,
     );
+  });
+
+  it("mengabaikan kunci dikenal yang nilainya kosong (?p=)", () => {
+    expect(decodeShareParams(new URLSearchParams("p=")).hasParams).toBe(false);
+  });
+
+  it("menghitung aksesibilitas kosong (?ac=) sebagai intent eksplisit", () => {
+    expect(decodeShareParams(new URLSearchParams("ac=")).hasParams).toBe(true);
+  });
+
+  it("menandai hasParams true untuk nilai normal (?p=600)", () => {
+    expect(decodeShareParams(new URLSearchParams("p=600")).hasParams).toBe(true);
   });
 
   it("mengabaikan kunci asing tanpa merusak sisanya", () => {

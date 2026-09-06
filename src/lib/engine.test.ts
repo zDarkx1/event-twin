@@ -420,3 +420,66 @@ describe("clampParams — batas kepercayaan sistem", () => {
     expect(clamped.participants).toBe(LIMITS.participants.min);
   });
 });
+
+describe("simulate — beban listrik denah", () => {
+  it("nol bila field ekstra tidak diisi (kompatibel mundur)", () => {
+    const r = simulate(BASE);
+
+    expect(r.energy.lightingKwh).toBeCloseTo(
+      (ENERGY.lightingWattPerPerson.halogen * 500 * 6) / 1000,
+      6,
+    );
+    expect(r.energy.soundKwh).toBeCloseTo(3 * 6, 6);
+  });
+
+  it("kotak lighting/sound menambah kWh lewat durasi", () => {
+    const r = simulate({ ...BASE, extraLightingKw: 0.4, extraSoundKw: 0.5 });
+
+    expect(r.energy.lightingKwh).toBeCloseTo(36 + 0.4 * 6, 6);
+    expect(r.energy.soundKwh).toBeCloseTo(18 + 0.5 * 6, 6);
+    expect(r.energy.kwh).toBeCloseTo(36 + 2.4 + 18 + 3, 6);
+    // Emisi dan biaya energi ikut naik lewat kWh yang sama.
+    expect(r.energy.co2eKg).toBeCloseTo(r.energy.kwh * ENERGY.emissionFactor.pln, 6);
+  });
+
+  it("beban yang sama di semua kandidat tak menggeser skor ternormalisasi", () => {
+    const base = simulate(BASE);
+    const loaded = simulate({ ...BASE, extraLightingKw: 1 });
+
+    expect(loaded.energy.kwh).toBeGreaterThan(base.energy.kwh);
+    // Enumerasi best/worst ikut bergeser sama → skor identik.
+    expect(loaded.dimensionScores.energy).toBeCloseTo(base.dimensionScores.energy, 8);
+  });
+
+  it("extras NaN/Infinity tidak meracuni hasil — semua tetap finite", () => {
+    for (const extra of [
+      Number.NaN,
+      Number.POSITIVE_INFINITY,
+      Number.NEGATIVE_INFINITY,
+    ]) {
+      const r = simulate({
+        ...BASE,
+        extraLightingKw: extra,
+        extraSoundKw: extra,
+      });
+      expect(Number.isFinite(r.energy.kwh)).toBe(true);
+      expect(Number.isFinite(r.energy.co2eKg)).toBe(true);
+      expect(Number.isFinite(r.sustainabilityScore)).toBe(true);
+    }
+  });
+
+  it("extras negatif dijepit — lightingKwh/soundKwh tidak pernah negatif", () => {
+    const r = simulate({ ...BASE, extraLightingKw: -5, extraSoundKw: -2 });
+
+    expect(r.energy.lightingKwh).toBeGreaterThanOrEqual(0);
+    expect(r.energy.soundKwh).toBeGreaterThanOrEqual(0);
+  });
+
+  it("akses duplikat dihitung sekali — Rp dan baseScore sama dengan tunggal", () => {
+    const single = simulate({ ...BASE, accessibility: ["ramp"] });
+    const dupe = simulate({ ...BASE, accessibility: ["ramp", "ramp"] });
+
+    expect(dupe.cost.accessibilityRp).toBe(single.cost.accessibilityRp);
+    expect(dupe.inclusion.baseScore).toBe(single.inclusion.baseScore);
+  });
+});

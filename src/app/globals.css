@@ -149,8 +149,37 @@
   }
   @media (min-width: 1024px) {
     html {
-      font-size: 125%; /* 16px → 20px: desktop punya ruang lebih */
+      font-size: 118.75%; /* 16px → 19px: 125% dikurangi 5% */
     }
+  }
+
+  /*
+   * Scrollbar seragam seluruh aplikasi (vertikal + horizontal): ramping,
+   * thumb membulat dari token border, menebal saat hover. Firefox memakai
+   * scrollbar-width/color; Chromium/WebKit pseudo-elemen di bawah.
+   */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--ring);
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
 }
 
@@ -274,5 +303,22 @@
       transition: none !important;
     }
     .bar-fill, .seg-fill { transition: none !important; }
+  }
+}
+
+/*
+ * Kotak beraksen denah venue — fallback tanpa color-mix (latar transparan,
+ * border solid via --box-color), progressive enhancement bila didukung.
+ * Tanpa animasi, jadi tidak perlu cabang reduced-motion/print.
+ */
+@layer components {
+  .box-accent {
+    background: transparent;
+    border-style: solid;
+  }
+  @supports (background: color-mix(in srgb, red 18%, transparent)) {
+    .box-accent {
+      background: color-mix(in srgb, var(--box-color) 18%, transparent);
+    }
   }
 }

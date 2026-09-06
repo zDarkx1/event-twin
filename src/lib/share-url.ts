@@ -189,7 +189,14 @@ export function decodeShareParams(qs: URLSearchParams): DecodedShare {
     ...DECISION_KEYS.map((k) => BASELINE_PREFIX + KEYS[k]),
     BASELINE_PREFIX + KEYS.accessibility,
   ];
-  const hasParams = known.some((key) => qs.has(key));
+  // Kunci kosong (?p=) bukan intent — kecuali aksesibilitas (?ac= = tanpa fasilitas).
+  const emptyOk = new Set([KEYS.accessibility, BASELINE_PREFIX + KEYS.accessibility]);
+  const hasParams = known.some((key) => {
+    const v = qs.get(key);
+    if (v === null) return false;
+    if (emptyOk.has(key)) return true;
+    return v !== "";
+  });
 
   const scenario = clampParams({
     participants: Math.round(

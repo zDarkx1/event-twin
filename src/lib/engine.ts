@@ -43,6 +43,33 @@ export const ACCESSIBILITY_FEATURES = Object.keys(
   ACCESSIBILITY,
 ) as AccessibilityFeature[];
 
+/**
+ * Beban listrik denah (kW) dari sumber tak tepercaya. Hanya bilangan finite
+ * > 0 yang lolos; NaN/Infinity/negatif/non-angka jadi 0. Tepat 0 tetap 0
+ * (kedua cabang menghasilkan 0, jadi tidak ada kasus khusus).
+ */
+export function safeExtraKw(v: unknown): number {
+  return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : 0;
+}
+
+/**
+ * Daftar akses unik yang dikenal — dedupe via Set + filter ke kunci yang
+ * dikenal. Array akses bisa berisi string asing saat runtime dari params
+ * rakitan tangan; yang asing dibuang, duplikat dihitung sekali.
+ */
+function uniqueKnownAccess(list: readonly unknown[]): AccessibilityFeature[] {
+  const seen = new Set<string>();
+  const out: AccessibilityFeature[] = [];
+  for (const item of list) {
+    if (typeof item !== "string") continue;
+    if (!Object.prototype.hasOwnProperty.call(ACCESSIBILITY, item)) continue;
+    if (seen.has(item)) continue;
+    seen.add(item);
+    out.push(item as AccessibilityFeature);
+  }
+  return out;
+}
+
 export interface EventParams {
   participants: number;
   durationHours: number;
@@ -57,6 +84,15 @@ export interface EventParams {
   powerSource: PowerSource;
   accessibility: AccessibilityFeature[];
   estimatedDisabledGuests: number;
+  /**
+   * Beban listrik denah venue (kW) — kotak lighting/sound. Opsional, default 0.
+   * Hanya diisi dari turunan denah (deriveLayoutPatch), tidak dari form/URL/
+   * draf: selalu dihitung ulang dari kotak, bukan disimpan. Diterapkan
+   * SETELAH clampParams supaya nilai turunan (selalu finite ≥ 0) tidak
+   * tersentuh batas form.
+   */
+  extraLightingKw?: number;
+  extraSoundKw?: number;
 }
 
 export interface WasteComposition {
@@ -221,7 +257,7 @@ function computeCost(
   const energyRp = energy.kwh * COST.tariffPerKwh[p.powerSource];
   // Yang diangkut ke TPA yang menimbulkan retribusi, bukan timbulan bruto.
   const wasteHaulingRp = waste.landfillKg * COST.wasteHaulingPerKg;
-  const accessibilityRp = p.accessibility.reduce(
+  const accessibilityRp = uniqueKnownAccess(p.accessibility).reduce(
     (sum, feature) => sum + ACCESSIBILITY[feature].cost,
     0,
   );
@@ -315,10 +351,11 @@ function normalizeLowerIsBetter(value: number, samples: number[]): number {
 }
 
 function computeInclusion(p: EventParams): InclusionResult {
-  const available = new Set(p.accessibility);
+  const unique = uniqueKnownAccess(p.accessibility);
+  const available = new Set(unique);
   const missing = ACCESSIBILITY_FEATURES.filter((f) => !available.has(f));
 
-  const baseScore = p.accessibility.reduce(
+  const baseScore = unique.reduce(
     (sum, feature) => sum + ACCESSIBILITY[feature].weight,
     0,
   );
@@ -358,8 +395,11 @@ function computeEnergy(p: EventParams): EnergyResult {
   // Watt per orang → kWh: (W × orang × jam) / 1000.
   const lightingKwh =
     (ENERGY.lightingWattPerPerson[p.lighting] * p.participants * p.durationHours) /
-    1000;
-  const soundKwh = p.soundSystemKw * p.durationHours;
+    1000 +
+    // Beban denah: kW × jam. Lihat komentar di EventParams soal asalnya.
+    safeExtraKw(p.extraLightingKw) * p.durationHours;
+  const soundKwh =
+    (p.soundSystemKw + safeExtraKw(p.extraSoundKw)) * p.durationHours;
   const kwh = lightingKwh + soundKwh;
 
   return {
