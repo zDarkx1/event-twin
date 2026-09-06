@@ -40,8 +40,11 @@ import {
 } from "@/components/ui/card";
 import { AiInsight } from "@/components/ai-insight";
 import { EventForm } from "@/components/event-form";
+import { EventPrintSummary } from "@/components/event-print-summary";
 import { ImpactDashboard } from "@/components/impact-dashboard";
 import { LayoutEditor } from "@/components/layout-editor";
+import { LayoutPrintSnapshot } from "@/components/layout-print-snapshot";
+import { PrintButton } from "@/components/print-button";
 import { RecommendationList } from "@/components/recommendation-list";
 import { ScenarioComparison } from "@/components/scenario-comparison";
 import { ShareLink } from "@/components/share-link";
@@ -90,7 +93,7 @@ function StickySummary({ result }: { result: SimulationResult }) {
   return (
     <div
       aria-hidden="true"
-      className="sticky top-0 z-20 -mx-4 flex items-center justify-between gap-1 border-b bg-background/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:hidden"
+      className="sticky top-0 z-20 -mx-4 flex items-center justify-between gap-1 border-b bg-background/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:hidden print:hidden"
     >
       {items.map((item) => (
         <span
@@ -350,11 +353,12 @@ export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
       Root sengaja block, bukan grid: `position: sticky` pada grid item dibatasi
       grid area-nya sendiri (satu baris), jadi strip ringkas tidak akan bergerak
       sama sekali. Grid dua kolom dipasang di elemen dalam.
+      `sim-root` membatasi aturan print sembunyikan-tombol ke halaman ini saja.
     */
-    <div>
+    <div className="sim-root">
       <StickySummary result={scenarioResult} />
 
-      <div className="grid gap-6">
+      <div className="sim-grid grid gap-6">
         <div
           ref={layoutRef}
           className={cn("reveal min-w-0", layoutVisible && "is-visible")}
@@ -370,20 +374,23 @@ export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <LayoutEditor
-              layout={layout}
-              onChange={updateLayout}
-              participants={scenario.participants}
-              wasteBins={scenario.wasteBins}
-              accessibility={scenario.accessibility}
-              onApplyWaste={applyWaste}
-              onApplyAccess={applyAccess}
-            />
+            <div className="print:hidden">
+              <LayoutEditor
+                layout={layout}
+                onChange={updateLayout}
+                participants={scenario.participants}
+                wasteBins={scenario.wasteBins}
+                accessibility={scenario.accessibility}
+                onApplyWaste={applyWaste}
+                onApplyAccess={applyAccess}
+              />
+            </div>
+            <LayoutPrintSnapshot layout={layout} />
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid min-w-0 gap-4 lg:grid-cols-[22rem_1fr] lg:items-start">
+      <div className="sim-grid grid min-w-0 gap-4 lg:grid-cols-[22rem_1fr] lg:items-start">
         {/*
           Kolom form menempel saat di-scroll, tapi dibatasi tinggi viewport dan
           di-scroll sendiri: tanpa itu, di layar 1024×768 bagian bawah form
@@ -391,8 +398,12 @@ export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
           Sticky + scroll dipasang di wrapper, bukan di Card: Card membawa
           `overflow-hidden` sendiri, dan menumpuk `overflow-y-auto` di atasnya
           bergantung pada urutan CSS yang tidak dijamin.
+
+          Kolom form disembunyikan di cetakan (input tak berguna di kertas dan
+          `max-h + overflow` akan memotong isi); EventPrintSummary di bawah
+          adalah penggantinya khusus print.
         */}
-        <div className="lg:sticky lg:top-4 lg:max-h-[calc(100svh-2rem)] lg:overflow-y-auto">
+        <div className="lg:sticky lg:top-4 lg:max-h-[calc(100svh-2rem)] lg:overflow-y-auto print:hidden">
           <Card>
             <CardHeader className="border-b">
               <CardTitle>Parameter acara</CardTitle>
@@ -409,6 +420,7 @@ export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
                 baseline={baseline}
                 hasLayoutLoad={hasLayoutLoad}
               />
+              <PrintButton />
               {hasLayoutLoad && (
                 <p role="note" className="text-xs text-muted-foreground tabular-nums">
                   Tautan berbagi tidak membawa beban denah (
@@ -443,11 +455,26 @@ export function ScenarioSimulator({ initial }: ScenarioSimulatorProps) {
         </div>
 
         <div className="grid gap-6">
+          <EventPrintSummary
+            scenario={scenario}
+            layoutNote={
+              hasLayoutLoad
+                ? `Termasuk beban denah: ${decimal(layoutPatch.extraLightingKw)} kW lighting, ${decimal(layoutPatch.extraSoundKw)} kW sound.`
+                : null
+            }
+          />
           <ImpactDashboard result={scenarioResult} baseline={baselineResult} />
 
+          {/*
+            Insight AI disembunyikan di cetakan: isinya respons non-deterministik
+            yang butuh network/key, tak pantas jadi arsip kertas.
+          */}
           <div
             ref={aiRef}
-            className={cn("reveal min-w-0", aiVisible && "is-visible")}
+            className={cn(
+              "reveal min-w-0 print:hidden",
+              aiVisible && "is-visible",
+            )}
           >
             <AiInsight scenario={energizedScenario} baseline={baseline} />
           </div>
