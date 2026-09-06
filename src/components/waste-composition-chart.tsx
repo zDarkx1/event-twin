@@ -61,7 +61,7 @@ export function WasteCompositionChart({
           <span
             key={f.key}
             className={[
-              "block min-w-0.5 basis-0",
+              "seg-fill block min-w-0.5 basis-0",
               // 4 px hanya di ujung batang — sudut di tengah tumpukan akan
               // terlihat seperti celah kedua.
               i === 0 ? "rounded-l-[4px]" : "",

@@ -8,9 +8,10 @@
  * dan membuat tombol Back tidak berguna). Tautan baru dihitung tepat saat
  * tombol ditekan.
  */
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { EventParams } from "@/lib/engine";
 import { encodeShareParams } from "@/lib/share-url";
 
@@ -25,6 +26,10 @@ export function ShareLink({ scenario, baseline }: ShareLinkProps) {
   const [state, setState] = useState<State>("idle");
   const [manualUrl, setManualUrl] = useState("");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
 
   const buildUrl = () => {
     const qs = encodeShareParams(scenario, baseline);
@@ -51,32 +56,49 @@ export function ShareLink({ scenario, baseline }: ShareLinkProps) {
 
   return (
     <div className="grid gap-2">
-      <Button variant="outline" size="sm" onClick={handleShare} className="w-full">
-        {state === "copied" ? (
-          <>
-            <Check aria-hidden="true" /> Tautan tersalin
-          </>
-        ) : (
-          <>
-            <Link2 aria-hidden="true" /> Salin tautan skenario
-          </>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleShare}
+        className={cn(
+          "w-full",
+          // Warna sukses ikut bertransisi (transition-all bawaan Button) —
+          // konfirmasi tidak dibawa ikon saja.
+          state === "copied" && "border-success/50 text-success dark:border-success/50",
         )}
+      >
+        <span
+          key={state === "copied" ? "copied" : "idle"}
+          className="swap-enter inline-flex items-center gap-1"
+        >
+          {state === "copied" ? (
+            <>
+              <Check aria-hidden="true" /> Tautan tersalin
+            </>
+          ) : (
+            <>
+              <Link2 aria-hidden="true" /> Salin tautan skenario
+            </>
+          )}
+        </span>
       </Button>
 
       <p aria-live="polite" className="text-xs text-muted-foreground">
-        {state === "copied"
-          ? "Tautan memuat seluruh parameter — penerima melihat skenario yang sama."
-          : "Bagikan hasil simulasi tanpa perlu akun atau database."}
+        <span key={state === "copied" ? "copied" : "idle"} className="swap-enter inline-block">
+          {state === "copied"
+            ? "Tautan memuat seluruh parameter — penerima melihat skenario yang sama."
+            : "Bagikan hasil simulasi tanpa perlu akun atau database."}
+        </span>
       </p>
 
       {state === "failed" && (
-        <label className="grid gap-1 text-xs text-muted-foreground">
+        <label className="mount-enter grid gap-1 text-xs text-muted-foreground">
           Salin manual:
           <input
             readOnly
             value={manualUrl}
             onFocus={(e) => e.currentTarget.select()}
-            className="w-full rounded-md border bg-muted/40 px-2 py-1 font-mono text-[11px]"
+            className="w-full rounded-md border bg-muted/40 px-2 py-1 font-mono text-[0.6875rem]"
           />
         </label>
       )}
